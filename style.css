@@ -1563,9 +1563,12 @@ body {
 
   .back-button,
   .page-title,
-  .help,
-  .status-area {
+  .help {
     display: none !important;
+  }
+
+  .status-area {
+    display: flex !important;
   }
 
   .layout {
@@ -1821,5 +1824,43 @@ body {
     .ngword-body {
       max-height: calc(100vh - 150px);
     }
+  }
+}
+
+
+/* ===== Mobile stamp visibility fixes ===== */
+
+@media (max-width: 640px) {
+
+  .stamp-window {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .stamp-body {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .stamp-grid {
+    align-content: start;
+  }
+
+  .stamp-item {
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .stamp-image {
+    display: block;
   }
 }
