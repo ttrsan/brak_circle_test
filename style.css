@@ -1864,3 +1864,90 @@ body {
     display: block;
   }
 }
+
+
+/* ===== iPhone info panel recovery ===== */
+
+@media (max-width: 640px) {
+
+  .layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100dvh - 44px);
+    overflow: hidden;
+  }
+
+  .left-panel {
+    display: block !important;
+
+    width: calc(100% - 8px);
+    min-width: 0;
+
+    margin: 4px 4px 0;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    flex: 0 0 auto;
+  }
+
+  .circle-card {
+    padding: 8px 10px;
+  }
+
+  .circle-name {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .circle-meta {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .notice {
+    margin-top: 6px;
+    padding-top: 6px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .chat-panel {
+    width: calc(100% - 8px);
+    flex: 1;
+    min-height: 0;
+
+    margin: 4px;
+
+    border-radius: 12px;
+  }
+
+  .chat-log {
+    padding-top: 8px;
+  }
+}
+
+
+/* ===== Stamp load error ===== */
+
+.stamp-load-error {
+  position: relative;
+  background: rgba(255,255,255,0.9);
+}
+
+.stamp-load-error::after {
+  content: "?";
+
+  position: absolute;
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+
+  color: #587692;
+
+  font-size: 32px;
+  font-weight: 900;
+}

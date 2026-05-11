@@ -202,7 +202,11 @@ function createStampList() {
       image.className = "stamp-image";
       image.src = imagePath;
       image.alt = button.title;
-      image.loading = "lazy";
+
+      image.onerror = () => {
+        button.classList.add("stamp-load-error");
+      };
+      
 
       button.appendChild(image);
 
