@@ -1951,3 +1951,115 @@ body {
   font-size: 32px;
   font-weight: 900;
 }
+
+
+/* ===== Mobile circle info inside chat panel ===== */
+
+.mobile-circle-info {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-circle-info {
+    display: block !important;
+
+    flex: 0 0 auto;
+
+    margin: 4px 4px 6px;
+    padding: 8px 10px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.84);
+    box-shadow: 0 2px 8px rgba(31, 76, 123, 0.16);
+
+    color: #183453;
+  }
+
+  .mobile-circle-title {
+    margin-bottom: 6px;
+
+    color: #ffffff;
+    background: linear-gradient(105deg, rgba(9, 58, 112, 0.94), rgba(23, 69, 116, 0.88));
+
+    padding: 7px 10px;
+
+    border-radius: 5px;
+
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  .mobile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 4px;
+
+    margin-bottom: 6px;
+  }
+
+  .mobile-info-grid div {
+    min-width: 0;
+
+    padding: 4px 5px;
+
+    border-radius: 5px;
+
+    background: rgba(238, 247, 251, 0.9);
+
+    line-height: 1.2;
+  }
+
+  .mobile-info-grid span {
+    display: block;
+
+    color: #55718c;
+
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .mobile-info-grid strong {
+    display: block;
+
+    color: #183453;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-greeting {
+    padding-top: 5px;
+
+    border-top: 1px solid rgba(79, 126, 160, 0.22);
+
+    color: #24445f;
+
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  /* 既存の左パネルはスマホでは使わず、チャット内の情報ブロックを使う */
+  .left-panel {
+    display: none !important;
+  }
+
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tabs {
+    flex: 0 0 48px;
+  }
+
+  .chat-view,
+  .setting-view {
+    min-height: 0;
+  }
+}
