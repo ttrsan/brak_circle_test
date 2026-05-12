@@ -8,12 +8,7 @@
 </head>
 <body>
   <div class="bg"></div>
-
-  <header class="top-bar">
-    <div class="creator-info">
-      <span class="creator-text">Author: X @ttr_san</span>
-    </div>
-  </header>
+  <header class="top-bar"><div class="creator-info">Author: X @ttr_san</div></header>
 
   <main class="layout">
     <section class="chat-panel">
@@ -31,37 +26,26 @@
         <button id="settingTab" class="tab" type="button">設定</button>
       </div>
 
-      <div id="chatView" class="chat-view">
-        <div id="chatLog" class="chat-log"></div>
-
+      <div id="chatView" class="view chat-view">
         <form id="chatForm" class="input-area">
           <input id="messageInput" type="text" maxlength="140" placeholder="内容を入力してください。" autocomplete="off" />
           <button class="face-button" type="button">☺</button>
           <button class="send-button" type="submit">送信する</button>
         </form>
+        <div id="chatLog" class="chat-log"></div>
       </div>
 
-      <div id="settingView" class="setting-view hidden">
+      <div id="settingView" class="view setting-view hidden">
         <div class="setting-card">
           <div class="setting-title">チャット設定</div>
-
           <label class="setting-label" for="senderNameInput">送信者名</label>
           <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
-
           <p class="setting-note">ここで設定した名前は、このページを開いている間だけ使用されます。</p>
 
           <div class="setting-group">
             <div class="setting-label">伏字モード</div>
-
-            <label class="radio-setting">
-              <input type="radio" name="censorMode" value="highlight" checked>
-              <span>赤文字表示</span>
-            </label>
-
-            <label class="radio-setting">
-              <input type="radio" name="censorMode" value="mask">
-              <span>****表示</span>
-            </label>
+            <label class="radio-setting"><input type="radio" name="censorMode" value="highlight" checked><span>赤文字表示</span></label>
+            <label class="radio-setting"><input type="radio" name="censorMode" value="mask"><span>****表示</span></label>
           </div>
 
           <button id="openNgWordModalButton" class="sub-button" type="button">NGワード一覧を表示</button>
@@ -73,28 +57,16 @@
   </main>
 
   <div id="stampModal" class="modal hidden">
-    <div class="modal-window stamp-window">
-      <div class="modal-header">
-        <span>チャットスタンプ</span>
-        <button id="closeStampButton" class="modal-close" type="button">×</button>
-      </div>
-
-      <div class="stamp-body">
-        <div id="stampGrid" class="stamp-grid"></div>
-      </div>
+    <div class="modal-window">
+      <div class="modal-header"><span>チャットスタンプ</span><button id="closeStampButton" class="modal-close" type="button">×</button></div>
+      <div class="modal-body"><div id="stampGrid" class="stamp-grid"></div></div>
     </div>
   </div>
 
   <div id="ngWordModal" class="modal hidden">
     <div class="modal-window ngword-window">
-      <div class="modal-header">
-        <span>NGワード一覧</span>
-        <button id="closeNgWordModalButton" class="modal-close" type="button">×</button>
-      </div>
-
-      <div class="ngword-body">
-        <div id="ngWordList" class="ngword-list"></div>
-      </div>
+      <div class="modal-header"><span>NGワード一覧</span><button id="closeNgWordModalButton" class="modal-close" type="button">×</button></div>
+      <div class="modal-body"><div id="ngWordList" class="ngword-list"></div></div>
     </div>
   </div>
 
