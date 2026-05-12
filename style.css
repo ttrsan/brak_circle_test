@@ -2616,3 +2616,38 @@ body {
 .notice-title {
   display: none !important;
 }
+
+
+/* ===== Remove old greeting card ===== */
+
+.greeting-card {
+  display: none !important;
+}
+
+
+/* ===== Remove mobile greeting clamp ===== */
+
+@media (max-width: 640px) {
+
+  .mobile-circle-info {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+  }
+
+  .mobile-greeting {
+    display: block !important;
+
+    overflow: visible !important;
+
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+
+    white-space: normal !important;
+
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+  }
+}
