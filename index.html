@@ -3,45 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>サークルチャット練習</title>
+  <title>サークルチャット風 非公式サイト</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="bg"></div>
 
   <header class="top-bar">
-    
-    
-    
-
-    <div class="status-area creator-info">
+    <div class="creator-info">
       <span class="creator-text">Author: X @ttr_san</span>
     </div>
   </header>
 
   <main class="layout">
-    <section class="left-panel">
-      <h1 class="circle-name">テストサークル</h1>
-
-      
-
-      
-    </section>
-
     <section class="chat-panel">
-      
-
-        <div class="mobile-greeting">
-          
-        </div>
-      </div>
-
-      
-      
-
       <div class="top-circle-info">
         <div class="top-circle-title">テストサークル</div>
-
         <div class="top-circle-description">
           ブルーアーカイブのサークルチャット風の非公式サイトです。<br>
           禁止ワードの確認ができます。<br>
@@ -53,14 +30,15 @@
         <button id="chatTab" class="tab active" type="button">チャット</button>
         <button id="settingTab" class="tab" type="button">設定</button>
       </div>
+
       <div id="chatView" class="chat-view">
+        <div id="chatLog" class="chat-log"></div>
+
         <form id="chatForm" class="input-area">
           <input id="messageInput" type="text" maxlength="140" placeholder="内容を入力してください。" autocomplete="off" />
           <button class="face-button" type="button">☺</button>
           <button class="send-button" type="submit">送信する</button>
         </form>
-
-        <div id="chatLog" class="chat-log"></div>
       </div>
 
       <div id="settingView" class="setting-view hidden">
@@ -86,46 +64,40 @@
             </label>
           </div>
 
-          
-<button id="openNgWordModalButton" class="toggle-ngword-button" type="button">
-  NGワード一覧を表示
-</button>
-
-<button id="applySettingButton" class="apply-setting-button" type="button">設定を反映</button>
-
-          <button id="clearChatButton" class="clear-chat-button" type="button">チャットをクリア</button>
+          <button id="openNgWordModalButton" class="sub-button" type="button">NGワード一覧を表示</button>
+          <button id="applySettingButton" class="primary-button" type="button">設定を反映</button>
+          <button id="clearChatButton" class="sub-button" type="button">チャットをクリア</button>
         </div>
       </div>
     </section>
   </main>
 
-  
-<div id="stampModal" class="stamp-modal hidden">
-  <div class="stamp-window">
-    <div class="stamp-header">
-      <span>チャットスタンプ</span>
-      <button id="closeStampButton" class="stamp-close" type="button">×</button>
-    </div>
+  <div id="stampModal" class="modal hidden">
+    <div class="modal-window stamp-window">
+      <div class="modal-header">
+        <span>チャットスタンプ</span>
+        <button id="closeStampButton" class="modal-close" type="button">×</button>
+      </div>
 
-    <div class="stamp-body">
-      <div id="stampGrid" class="stamp-grid"></div>
-    </div>
-  </div>
-</div>
-
-<div id="ngWordModal" class="ngword-modal hidden">
-  <div class="ngword-window">
-    <div class="ngword-header">
-      <span>NGワード一覧</span>
-      <button id="closeNgWordModalButton" class="ngword-close" type="button">×</button>
-    </div>
-
-    <div class="ngword-body">
-      <div id="ngWordList" class="ngword-list"></div>
+      <div class="stamp-body">
+        <div id="stampGrid" class="stamp-grid"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <div id="ngWordModal" class="modal hidden">
+    <div class="modal-window ngword-window">
+      <div class="modal-header">
+        <span>NGワード一覧</span>
+        <button id="closeNgWordModalButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="ngword-body">
+        <div id="ngWordList" class="ngword-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
