@@ -2689,3 +2689,83 @@ body {
     line-height: 1.35 !important;
   }
 }
+
+
+/* ===== Unified top circle info ===== */
+
+.left-panel {
+  display: none !important;
+}
+
+.top-circle-info {
+  margin: 4px 4px 6px;
+  padding: 8px 10px;
+
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.84);
+  box-shadow: 0 2px 8px rgba(31, 76, 123, 0.16);
+
+  color: #183453;
+}
+
+.top-circle-title {
+  margin-bottom: 5px;
+
+  color: #ffffff;
+  background:
+    linear-gradient(
+      105deg,
+      rgba(9, 58, 112, 0.94),
+      rgba(23, 69, 116, 0.88)
+    );
+
+  padding: 7px 10px;
+
+  border-radius: 5px;
+
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.top-circle-description {
+  color: #284863;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  opacity: 0.94;
+}
+
+/* 「今」領域削除 */
+time {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+
+  .top-circle-info {
+    margin: 3px 3px 4px;
+    padding: 6px 8px;
+  }
+
+  .top-circle-title {
+    margin-bottom: 4px;
+
+    padding: 5px 8px;
+
+    font-size: 15px;
+  }
+
+  .top-circle-description {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+
+  /* 旧mobile-circle-infoは使わない */
+  .mobile-circle-info {
+    display: none !important;
+  }
+}
