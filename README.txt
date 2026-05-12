@@ -98,3 +98,11 @@ assets/stamps/03/01.png ～ 32.png
 - PC表示でも「テストサークル」を画面上部へ移動
 - PC / スマホで共通デザイン化
 - 左パネル構成を廃止
+
+
+変更内容:
+- index.html を整理
+- top-circle-info を1つに統一
+- mobile-circle-info 削除
+- greeting-card 削除
+- left-panel 削除
