@@ -2608,3 +2608,11 @@ body {
     opacity: 0.92;
   }
 }
+
+
+/* ===== Remove greeting block ===== */
+
+.notice,
+.notice-title {
+  display: none !important;
+}
