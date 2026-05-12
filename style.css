@@ -2388,3 +2388,73 @@ body {
     -webkit-line-clamp: 3;
   }
 }
+
+
+/* ===== Remove unused meta area spacing ===== */
+
+.circle-meta,
+.mobile-info-grid {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+
+  .mobile-circle-info {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    padding-bottom: 8px !important;
+  }
+
+  .mobile-circle-title {
+    margin-bottom: 4px !important;
+  }
+
+  .mobile-greeting {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+
+    display: block !important;
+  }
+}
+
+
+/* ===== Mobile top input layout ===== */
+
+@media (max-width: 640px) {
+
+  .chat-view {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .input-area {
+    order: -1;
+
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(216, 231, 240, 0.98),
+        rgba(216, 231, 240, 0.94)
+      );
+
+    border-bottom:
+      1px solid rgba(84, 118, 145, 0.18);
+
+    backdrop-filter: blur(4px);
+  }
+
+  .chat-log {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
