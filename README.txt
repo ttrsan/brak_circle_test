@@ -106,3 +106,8 @@ assets/stamps/03/01.png ～ 32.png
 - mobile-circle-info 削除
 - greeting-card 削除
 - left-panel 削除
+
+
+変更内容:
+- PC表示時にも top-circle-description を表示
+- スマホと同じく説明文が見えるよう修正

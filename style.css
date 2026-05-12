@@ -2847,3 +2847,30 @@ time {
 .greeting-card {
   display: none !important;
 }
+
+
+/* ===== Show description on PC too ===== */
+
+@media (min-width: 641px) {
+  .top-circle-description {
+    display: block !important;
+
+    margin-top: 6px;
+
+    color: #284863;
+
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+
+    opacity: 0.94;
+  }
+
+  .top-circle-info {
+    padding: 10px 12px !important;
+  }
+
+  .top-circle-title {
+    margin-bottom: 4px !important;
+  }
+}
