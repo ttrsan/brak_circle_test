@@ -2582,3 +2582,29 @@ body {
     font-size: 14px !important;
   }
 }
+
+
+/* ===== Unified greeting style ===== */
+
+.notice,
+.mobile-greeting {
+  color: #284863 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 640px) {
+
+  .mobile-circle-info {
+    padding-bottom: 6px !important;
+  }
+
+  .mobile-greeting {
+    margin-top: 2px !important;
+
+    font-size: 9px !important;
+    line-height: 1.3 !important;
+
+    opacity: 0.92;
+  }
+}
