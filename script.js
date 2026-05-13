@@ -122,6 +122,7 @@ const allowWords = [
   "わかも"
 ];
 
+
 const stampBasePath = "assets/stamps";
 
 const stampCategories = [
@@ -150,6 +151,11 @@ const openNgWordModalButton = document.getElementById("openNgWordModalButton");
 const ngWordModal = document.getElementById("ngWordModal");
 const closeNgWordModalButton = document.getElementById("closeNgWordModalButton");
 const ngWordList = document.getElementById("ngWordList");
+
+const openAllowWordModalButton = document.getElementById("openAllowWordModalButton");
+const allowWordModal = document.getElementById("allowWordModal");
+const closeAllowWordModalButton = document.getElementById("closeAllowWordModalButton");
+const allowWordList = document.getElementById("allowWordList");
 
 let senderName = "先生";
 let censorMode = "highlight";
@@ -462,6 +468,34 @@ closeNgWordModalButton.addEventListener("click", () => {
 ngWordModal.addEventListener("click", (event) => {
   if (event.target === ngWordModal) {
     ngWordModal.classList.add("hidden");
+  }
+});
+
+
+function renderAllowWordList() {
+  allowWordList.innerHTML = "";
+
+  for (const word of allowWords) {
+    const item = document.createElement("div");
+    item.className = "allowword-list-item";
+    item.textContent = word;
+
+    allowWordList.appendChild(item);
+  }
+}
+
+openAllowWordModalButton.addEventListener("click", () => {
+  renderAllowWordList();
+  allowWordModal.classList.remove("hidden");
+});
+
+closeAllowWordModalButton.addEventListener("click", () => {
+  allowWordModal.classList.add("hidden");
+});
+
+allowWordModal.addEventListener("click", (event) => {
+  if (event.target === allowWordModal) {
+    allowWordModal.classList.add("hidden");
   }
 });
 

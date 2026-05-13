@@ -846,3 +846,41 @@ body {
     }
   }
 }
+
+
+/* Allow word modal */
+
+.allowword-window {
+  width: min(720px, calc(100vw - 32px));
+}
+
+.allowword-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.allowword-list-item {
+  padding: 9px 12px;
+
+  border-radius: 8px;
+
+  color: #1d3f63;
+  background: rgba(255, 255, 255, 0.9);
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .allowword-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .allowword-list-item {
+    padding: 8px 10px;
+
+    font-size: 14px;
+  }
+}
