@@ -302,9 +302,7 @@ body {
   border-radius: 10px;
 
   color: #ffffff;
-  background:
-    radial-gradient(circle at 35% 32%, #f8ffff 0 16%, transparent 17%),
-    linear-gradient(135deg, #d9eef4, #7aa7bb);
+  background: linear-gradient(135deg, #d9eef4, #7aa7bb);
 
   box-shadow: 0 2px 5px rgba(40, 82, 120, 0.28);
 
