@@ -20,3 +20,9 @@
 - 設定タブに「許容ワード一覧」ボタンを追加
 - 「NGワード一覧を表示」を「NGワード一覧」に変更
 - 許容ワード一覧をモーダル表示
+
+
+変更内容:
+- ngWords / allowWords を word-settings.js へ分離
+- script.js を処理専用へ整理
+- index.html に word-settings.js を追加
