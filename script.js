@@ -27,7 +27,6 @@ const messageInput = document.getElementById("messageInput");
 const faceButton = document.querySelector(".face-button");
 
 const senderNameInput = document.getElementById("senderNameInput");
-const applySettingButton = document.getElementById("applySettingButton");
 const clearChatButton = document.getElementById("clearChatButton");
 
 const stampModal = document.getElementById("stampModal");
@@ -188,9 +187,13 @@ chatForm.addEventListener("submit", (event) => {
   messageInput.focus();
 });
 
-applySettingButton.addEventListener("click", () => {
-  senderName = senderNameInput.value.trim() || "先生";
 
+
+function updateSenderName() {
+  senderName = senderNameInput.value.trim() || "先生";
+}
+
+function updateCensorMode() {
   const selectedMode = document.querySelector(
     'input[name="censorMode"]:checked'
   );
@@ -198,6 +201,12 @@ applySettingButton.addEventListener("click", () => {
   if (selectedMode) {
     censorMode = selectedMode.value;
   }
+}
+
+senderNameInput.addEventListener("input", updateSenderName);
+
+document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
+  radio.addEventListener("change", updateCensorMode);
 });
 
 clearChatButton.addEventListener("click", () => {
