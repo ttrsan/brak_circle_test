@@ -1,12 +1,125 @@
 const ngWords = [
+  "hな",
+  "hに",
   "かす",
-  "カス",
+  "gm",
   "あほ",
-  "アホ",
-  "にーと",
-  "ニート",
-  "大好き",
-  "神すぎる"
+  "とさつ",
+  "にーと"
+];
+
+const allowWords = [
+  "あいり",
+  "あかね",
+  "あこ",
+  "あさひ",
+  "あすな",
+  "あずさ",
+  "あつこ",
+  "あやね",
+  "ありす",
+  "あろな",
+  "いおり",
+  "いずな",
+  "いちか",
+  "いぶき",
+  "うい",
+  "うたは",
+  "えいみ",
+  "えりか",
+  "おとは",
+  "かえで",
+  "かずさ",
+  "かすみ",
+  "かよこ",
+  "かりん",
+  "かんな",
+  "ききょう",
+  "きらら",
+  "きりの",
+  "くるみ",
+  "くろこ",
+  "けい",
+  "ここな",
+  "こくりこ",
+  "こたま",
+  "こはる",
+  "こゆき",
+  "さおり",
+  "さき",
+  "さくらこ",
+  "さつき",
+  "さや",
+  "しぐれ",
+  "しずこ",
+  "しのん",
+  "しみこ",
+  "しゅろ",
+  "しゅん",
+  "じゅり",
+  "しろこ",
+  "すずみ",
+  "すみれ",
+  "せな",
+  "せりか",
+  "せりな",
+  "ちあき",
+  "ちせ",
+  "ちなつ",
+  "つばき",
+  "つくよ",
+  "つるぎ",
+  "とき",
+  "ともえ",
+  "なぎさ",
+  "なつ",
+  "にや",
+  "ねる",
+  "のあ",
+  "のどか",
+  "はすみ",
+  "はなえ",
+  "はなこ",
+  "はるか",
+  "はるな",
+  "ひな",
+  "ひなた",
+  "ひふみ",
+  "ひまり",
+  "ふうか",
+  "ふぶき",
+  "ぷらな",
+  "ほしの",
+  "まき",
+  "ましろ",
+  "まりな",
+  "みか",
+  "みさき",
+  "みちる",
+  "みどり",
+  "みな",
+  "みね",
+  "みもり",
+  "みやこ",
+  "みゆ",
+  "むつき",
+  "めぐ",
+  "もえ",
+  "もみじ",
+  "ももい",
+  "ももか",
+  "ゆうか",
+  "ゆかり",
+  "ゆず",
+  "ゆめ",
+  "よしみ",
+  "りお",
+  "りん",
+  "るみ",
+  "れい",
+  "れいさ",
+  "れんげ",
+  "わかも"
 ];
 
 const stampBasePath = "assets/stamps";
@@ -41,6 +154,18 @@ const ngWordList = document.getElementById("ngWordList");
 let senderName = "先生";
 let censorMode = "highlight";
 
+function hiraToKata(text) {
+  return text.replace(/[\u3041-\u3096]/g, (char) => {
+    return String.fromCharCode(char.charCodeAt(0) + 0x60);
+  });
+}
+
+function normalizeText(text) {
+  return hiraToKata(
+    text.normalize("NFKC").toLowerCase()
+  );
+}
+
 function escapeHtml(text) {
   return text
     .replaceAll("&", "&amp;")
@@ -53,30 +178,82 @@ function escapeRegExp(text) {
 }
 
 function applyCensor(text) {
-  let safeText = escapeHtml(text);
+  const protectedRanges = [];
 
-  for (const word of ngWords) {
-    if (!word) {
-      continue;
-    }
+  for (const allowWord of allowWords) {
+    const normalizedAllowWord = normalizeText(allowWord);
 
-    const safeWord = escapeHtml(word);
-    const pattern = new RegExp(escapeRegExp(safeWord), "g");
+    for (let i = 0; i < text.length; i++) {
+      const target = text.slice(i, i + allowWord.length);
 
-    if (censorMode === "highlight") {
-      safeText = safeText.replace(
-        pattern,
-        `<span class="ng-word">${safeWord}</span>`
-      );
-    } else if (censorMode === "mask") {
-      safeText = safeText.replace(
-        pattern,
-        "*".repeat(word.length)
-      );
+      if (normalizeText(target) === normalizedAllowWord) {
+        protectedRanges.push({
+          start: i,
+          end: i + allowWord.length
+        });
+      }
     }
   }
 
-  return safeText;
+  function isProtected(index) {
+    return protectedRanges.some((range) => {
+      return index >= range.start && index < range.end;
+    });
+  }
+
+  let result = "";
+  let index = 0;
+
+  while (index < text.length) {
+    let matched = false;
+
+    const halfKanaMatch = text.slice(index).match(/^[ｦ-ﾟ]+/);
+
+    if (halfKanaMatch) {
+      const target = halfKanaMatch[0];
+
+      if (censorMode === "highlight") {
+        result += `<span class="ng-word">${escapeHtml(target)}</span>`;
+      } else {
+        result += "*".repeat(target.length);
+      }
+
+      index += target.length;
+      continue;
+    }
+
+    for (const word of ngWords) {
+      if (!word) {
+        continue;
+      }
+
+      if (isProtected(index)) {
+        continue;
+      }
+
+      const target = text.slice(index, index + word.length);
+
+      if (normalizeText(target) === normalizeText(word)) {
+        if (censorMode === "highlight") {
+          result += `<span class="ng-word">${escapeHtml(target)}</span>`;
+        } else {
+          result += "*".repeat(word.length);
+        }
+
+        index += word.length;
+        matched = true;
+
+        break;
+      }
+    }
+
+    if (!matched) {
+      result += escapeHtml(text[index]);
+      index += 1;
+    }
+  }
+
+  return result;
 }
 
 function createNameLine() {
