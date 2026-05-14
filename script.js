@@ -5,6 +5,7 @@ const stampBasePath = "assets/stamps";
 
 const stampCategories = [
   { folder: "01", count: 20 },
+  { folder: "02", count: 20 },
   { folder: "03", count: 32 }
 ];
 
