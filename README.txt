@@ -26,3 +26,12 @@
 - ngWords / allowWords を word-settings.js へ分離
 - script.js を処理専用へ整理
 - index.html に word-settings.js を追加
+
+
+コメント:
+- 差別語・歴史的蔑称系がかなり増えてきたため、
+  将来的にはカテゴリ別ファイル分離がおすすめです。
+- 例:
+  ngwords-adult.js
+  ngwords-violence.js
+  ngwords-slur.js
