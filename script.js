@@ -190,9 +190,7 @@ function addMessage(text) {
   bubble.innerHTML = applyCensor(text);
 
   messageArea.appendChild(bubble);
-  chatLog.appendChild(item);
-
-  scrollToBottom();
+  chatLog.prepend(item);
 }
 
 function addImageStampMessage(imagePath) {
@@ -209,9 +207,7 @@ function addImageStampMessage(imagePath) {
   bubble.appendChild(image);
   messageArea.appendChild(bubble);
 
-  chatLog.appendChild(item);
-
-  scrollToBottom();
+  chatLog.prepend(item);
 }
 
 function showChatView() {

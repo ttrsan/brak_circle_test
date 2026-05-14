@@ -35,3 +35,8 @@
   ngwords-adult.js
   ngwords-violence.js
   ngwords-slur.js
+
+
+変更内容:
+- 新しいチャットを上に表示するよう変更
+- appendChild → prepend へ変更
