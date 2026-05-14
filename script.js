@@ -9,6 +9,7 @@ const stampCategories = [
   { folder: "03", count: 32 }
 ];
 
+
 const chatTab = document.getElementById("chatTab");
 const settingTab = document.getElementById("settingTab");
 const chatView = document.getElementById("chatView");
