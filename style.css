@@ -884,3 +884,99 @@ body {
     font-size: 14px;
   }
 }
+
+
+/* Site info button */
+
+.top-circle-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-circle-title-row .top-circle-title {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.site-info-button {
+  width: 44px;
+  height: 44px;
+
+  display: grid;
+  place-items: center;
+
+  flex: 0 0 auto;
+
+  border: none;
+  border-radius: 8px;
+
+  color: #164773;
+  background: linear-gradient(#ffffff, #dceef5);
+
+  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24);
+
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.site-info-button:hover {
+  filter: brightness(1.06);
+}
+
+.site-info-window {
+  width: min(680px, calc(100vw - 32px));
+}
+
+.site-info-body {
+  color: #24445f;
+
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.site-info-body p {
+  margin: 0 0 14px;
+}
+
+.site-info-credit {
+  color: #2b5f92;
+  font-weight: 900;
+}
+
+@media (max-width: 640px) {
+  .top-circle-info {
+    padding: 5px 7px;
+  }
+
+  .top-circle-title-row {
+    gap: 6px;
+  }
+
+  .site-info-button {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 7px;
+
+    font-size: 20px;
+  }
+
+  .site-info-body {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+}
+
+
+.site-info-button {
+  font-family:
+    "Segoe UI Symbol",
+    "Apple Symbols",
+    "Noto Sans JP",
+    sans-serif;
+}

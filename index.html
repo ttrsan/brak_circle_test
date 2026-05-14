@@ -11,12 +11,9 @@
 <main class="layout">
     <section class="chat-panel">
       <div class="top-circle-info">
-        <div class="top-circle-title">テストサークル</div>
-        <div class="top-circle-description">
-          ブルーアーカイブのサークルチャット風の非公式サイトです。<br>
-          禁止ワードの確認ができます。<br>
-          Yostar / NEXON Games とは関係ありません。<br><br>
-          制作: @ttr_san
+        <div class="top-circle-title-row">
+          <div class="top-circle-title">テストサークル</div>
+          <button id="openSiteInfoButton" class="site-info-button" type="button" aria-label="サイト情報を表示">ⓘ</button>
         </div>
       </div>
 
@@ -81,6 +78,25 @@
 
       <div class="modal-body">
         <div id="allowWordList" class="allowword-list"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="siteInfoModal" class="modal hidden">
+    <div class="modal-window site-info-window">
+      <div class="modal-header">
+        <span>サイトについて</span>
+        <button id="closeSiteInfoButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body site-info-body">
+        <p>
+          ブルーアーカイブのサークルチャット風の非公式サイトです。<br>
+          禁止ワードの確認ができます。<br>
+          Yostar / NEXON Games とは関係ありません。
+        </p>
+        <p class="site-info-credit">制作: @ttr_san</p>
       </div>
     </div>
   </div>

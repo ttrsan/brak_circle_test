@@ -35,6 +35,10 @@ const allowWordModal = document.getElementById("allowWordModal");
 const closeAllowWordModalButton = document.getElementById("closeAllowWordModalButton");
 const allowWordList = document.getElementById("allowWordList");
 
+const openSiteInfoButton = document.getElementById("openSiteInfoButton");
+const siteInfoModal = document.getElementById("siteInfoModal");
+const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
+
 let senderName = "先生";
 let censorMode = "highlight";
 
@@ -374,6 +378,21 @@ closeAllowWordModalButton.addEventListener("click", () => {
 allowWordModal.addEventListener("click", (event) => {
   if (event.target === allowWordModal) {
     allowWordModal.classList.add("hidden");
+  }
+});
+
+
+openSiteInfoButton.addEventListener("click", () => {
+  siteInfoModal.classList.remove("hidden");
+});
+
+closeSiteInfoButton.addEventListener("click", () => {
+  siteInfoModal.classList.add("hidden");
+});
+
+siteInfoModal.addEventListener("click", (event) => {
+  if (event.target === siteInfoModal) {
+    siteInfoModal.classList.add("hidden");
   }
 });
 
