@@ -1013,3 +1013,138 @@ body {
 
   pointer-events: none;
 }
+
+
+/* ===== Chat input bottom / newest bottom ===== */
+
+.chat-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-log {
+  order: 0;
+}
+
+.input-area {
+  order: 1;
+  flex: 0 0 62px;
+}
+
+@media (max-width: 640px) {
+  .chat-log {
+    order: 0;
+  }
+
+  .input-area {
+    order: 1;
+    flex: 0 0 44px;
+  }
+}
+
+
+/* ===== Chat order final fix ===== */
+
+.chat-log {
+  display: block !important;
+}
+
+.chat-item {
+  order: initial !important;
+}
+
+
+/* ===== Final normal chat order ===== */
+
+.chat-view {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chat-log {
+  order: 0 !important;
+  display: block !important;
+}
+
+.input-area {
+  order: 1 !important;
+}
+
+
+/* ===== Bottom-aligned chat messages ===== */
+/* 
+  チャットが少ない時でも、投稿をチャット欄の下側に表示する。
+  投稿順は「古い上 / 新しい下」のまま。
+*/
+.chat-log {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chat-log::before {
+  content: "";
+  margin-top: auto;
+}
+
+.chat-item {
+  flex: 0 0 auto;
+}
+
+
+/* ===== Tab view separation fix ===== */
+/*
+  設定タブ表示時にチャット欄・入力欄が残って見える問題への対策。
+  hidden は常に最優先で非表示にする。
+*/
+
+.hidden {
+  display: none !important;
+}
+
+.chat-view.hidden,
+.setting-view.hidden {
+  display: none !important;
+}
+
+.chat-view:not(.hidden) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.setting-view:not(.hidden) {
+  display: block !important;
+}
+
+/* 設定画面はチャット欄と完全に別ビューとして扱う */
+.setting-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* チャット欄の下寄せ指定は、チャットビューが表示されている時だけ有効 */
+.chat-view:not(.hidden) .chat-log {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.chat-view:not(.hidden) .chat-log::before {
+  content: "";
+  margin-top: auto;
+}
+
+/* 設定ビュー配下に万一チャット要素が混入しても表示しない */
+.setting-view .chat-log,
+.setting-view .input-area {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .setting-view:not(.hidden) {
+    display: block !important;
+  }
+
+  .setting-card {
+    margin: 0 auto;
+  }
+}

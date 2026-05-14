@@ -185,7 +185,9 @@ function createChatItem() {
 }
 
 function scrollToBottom() {
-  chatLog.scrollTop = chatLog.scrollHeight;
+  requestAnimationFrame(() => {
+    chatLog.scrollTop = chatLog.scrollHeight;
+  });
 }
 
 function addMessage(text) {
@@ -196,7 +198,9 @@ function addMessage(text) {
   bubble.innerHTML = applyCensor(text);
 
   messageArea.appendChild(bubble);
-  chatLog.prepend(item);
+  chatLog.appendChild(item);
+
+  scrollToBottom();
 }
 
 function addImageStampMessage(imagePath) {
@@ -213,7 +217,9 @@ function addImageStampMessage(imagePath) {
   bubble.appendChild(image);
   messageArea.appendChild(bubble);
 
-  chatLog.prepend(item);
+  chatLog.appendChild(item);
+
+  scrollToBottom();
 }
 
 function showChatView() {
@@ -222,6 +228,9 @@ function showChatView() {
 
   chatView.classList.remove("hidden");
   settingView.classList.add("hidden");
+
+  chatView.style.display = "flex";
+  settingView.style.display = "none";
 }
 
 function showSettingView() {
@@ -230,6 +239,9 @@ function showSettingView() {
 
   settingView.classList.remove("hidden");
   chatView.classList.add("hidden");
+
+  settingView.style.display = "block";
+  chatView.style.display = "none";
 }
 
 chatTab.addEventListener("click", showChatView);
@@ -395,3 +407,6 @@ siteInfoModal.addEventListener("click", (event) => {
 });
 
 createStampList();
+
+
+showChatView();
