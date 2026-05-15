@@ -285,6 +285,60 @@ function addSystemWarningStampMessage() {
   scrollToBottom();
 }
 
+
+function addShirokoReplyStampMessage() {
+  lastUserMessageSenderName = "__shiroko__";
+
+  const item = document.createElement("article");
+  item.className = "chat-item shiroko-reply-item";
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar image-avatar shiroko-avatar";
+
+  const avatarImage = document.createElement("img");
+  avatarImage.className = "avatar-image";
+  avatarImage.src = "assets/icons/shiroko.png";
+  avatarImage.alt = "シロコ";
+
+  avatar.appendChild(avatarImage);
+
+  const messageArea = document.createElement("div");
+  messageArea.className = "message-area";
+
+  const nameLine = document.createElement("div");
+  nameLine.className = "name-line";
+
+  const plate = document.createElement("span");
+  plate.className = "plate blue";
+  plate.textContent = "対策委員会";
+
+  const name = document.createElement("strong");
+  name.textContent = "シロコ";
+
+  nameLine.appendChild(plate);
+  nameLine.appendChild(name);
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble stamp-bubble";
+
+  const image = document.createElement("img");
+  image.className = "chat-stamp-image";
+  image.src = "assets/stamps/03/26.png";
+  image.alt = "stamp";
+
+  bubble.appendChild(image);
+
+  messageArea.appendChild(nameLine);
+  messageArea.appendChild(bubble);
+
+  item.appendChild(avatar);
+  item.appendChild(messageArea);
+
+  chatLog.appendChild(item);
+
+  scrollToBottom();
+}
+
 function showChatView() {
   chatTab.classList.add("active");
   settingTab.classList.remove("active");
@@ -371,6 +425,11 @@ function createStampList() {
 
       button.addEventListener("click", () => {
         addImageStampMessage(imagePath);
+
+        if (imagePath === "assets/stamps/01/18.png") {
+          addShirokoReplyStampMessage();
+        }
+
         stampModal.classList.add("hidden");
       });
 

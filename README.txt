@@ -107,3 +107,12 @@ assets/stamps/03/01.png ～ 32.png
 - warning-stamp-card 専用描画へ変更
 - 濃い青背景が当たらないよう整理
 - 白背景 + 青枠 + 通常スタンプ相当の角丸へ統一
+
+
+変更内容:
+- assets/stamps/01/18.png を送信した場合、シロコが assets/stamps/03/26.png を返信する処理を追加
+- シロコ返信のアイコンに assets/icons/shiroko.png を使用
+- シロコ返信の称号プレートを「対策委員会」に設定
+- シロコ返信の名前を「シロコ」に設定
+- NGワード送信時のユウカ警告表示は従来通り維持
+- README_warning_fix.txt は含めない

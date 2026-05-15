@@ -902,3 +902,30 @@ body {
 .warning-stamp-card {
   border: 3px solid #ffffff !important;
 }
+
+
+/* ===== Image avatar / Shiroko reply ===== */
+
+.image-avatar {
+  overflow: hidden;
+  padding: 0;
+  background: #ffffff !important;
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+}
+
+.shiroko-reply-item {
+  display: grid !important;
+  margin-left: 0 !important;
+}
+
+.shiroko-reply-item .message-area {
+  grid-column: auto !important;
+}
