@@ -939,3 +939,12 @@ body {
 .system-reply-stamp-bubble {
   border: 3px solid #ffffff !important;
 }
+
+
+/* ===== Yuuka warning avatar ===== */
+
+.yuuka-avatar {
+  overflow: hidden;
+  padding: 0;
+  background: #ffffff !important;
+}

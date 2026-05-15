@@ -241,8 +241,14 @@ function addSystemWarningStampMessage() {
   item.className = "chat-item system-warning-item";
 
   const avatar = document.createElement("div");
-  avatar.className = "avatar system-avatar";
-  avatar.textContent = "Y";
+  avatar.className = "avatar image-avatar yuuka-avatar";
+
+  const avatarImage = document.createElement("img");
+  avatarImage.className = "avatar-image";
+  avatarImage.src = "assets/icons/yuuka.png";
+  avatarImage.alt = "ユウカ";
+
+  avatar.appendChild(avatarImage);
 
   const messageArea = document.createElement("div");
   messageArea.className = "message-area";

@@ -121,3 +121,8 @@ assets/stamps/03/01.png ～ 32.png
 変更内容:
 - シロコ返信スタンプを system-reply-stamp-bubble クラスへ変更
 - シロコ返信などユーザー以外のスタンプ返信を白枠表示へ変更
+
+
+変更内容:
+- NGワード警告応答時のY文字アイコンを画像アイコンへ変更
+- 添付画像を assets/icons/yuuka.png として同梱
