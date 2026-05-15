@@ -39,6 +39,7 @@ const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 
 let senderName = "先生";
 let censorMode = "highlight";
+let lastUserMessageSenderName = "";
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -157,7 +158,7 @@ function createNameLine() {
 
   const plate = document.createElement("span");
   plate.className = "plate gold";
-  plate.textContent = "こんにちは";
+  plate.textContent = "新任の先生";
 
   const name = document.createElement("strong");
   name.textContent = senderName;
@@ -172,6 +173,10 @@ function createChatItem() {
   const item = document.createElement("article");
   item.className = "chat-item";
 
+  if (lastUserMessageSenderName === senderName) {
+    item.classList.add("compact");
+  }
+
   const avatar = document.createElement("div");
   avatar.className = "avatar";
   avatar.textContent = "S";
@@ -182,6 +187,8 @@ function createChatItem() {
 
   item.appendChild(avatar);
   item.appendChild(messageArea);
+
+  lastUserMessageSenderName = senderName;
 
   return {
     item,
@@ -228,19 +235,50 @@ function addImageStampMessage(imagePath) {
 }
 
 function addSystemWarningStampMessage() {
+  lastUserMessageSenderName = "__system__";
+
   const item = document.createElement("article");
   item.className = "chat-item system-warning-item";
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble system-warning-bubble";
+  const avatar = document.createElement("div");
+  avatar.className = "avatar system-avatar";
+  avatar.textContent = "Y";
+
+  const messageArea = document.createElement("div");
+  messageArea.className = "message-area";
+
+  const nameLine = document.createElement("div");
+  nameLine.className = "name-line";
+
+  const plate = document.createElement("span");
+  plate.className = "plate blue";
+  plate.textContent = "セミナー";
+
+  const name = document.createElement("strong");
+  name.textContent = "ユウカ";
+
+  nameLine.appendChild(plate);
+  nameLine.appendChild(name);
+
+  /*
+    NG警告スタンプは bubble / stamp-bubble を使わない。
+    完全に専用カード warning-stamp-card だけで描画する。
+  */
+  const warningStampCard = document.createElement("div");
+  warningStampCard.className = "warning-stamp-card";
 
   const image = document.createElement("img");
-  image.className = "system-warning-image";
+  image.className = "warning-stamp-image";
   image.src = "assets/stamps/01/11.png";
   image.alt = "warning";
 
-  bubble.appendChild(image);
-  item.appendChild(bubble);
+  warningStampCard.appendChild(image);
+
+  messageArea.appendChild(nameLine);
+  messageArea.appendChild(warningStampCard);
+
+  item.appendChild(avatar);
+  item.appendChild(messageArea);
 
   chatLog.appendChild(item);
 
@@ -305,6 +343,7 @@ document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
 
 clearChatButton.addEventListener("click", () => {
   chatLog.innerHTML = "";
+  lastUserMessageSenderName = "";
 });
 
 function createStampImagePath(folder, number) {
