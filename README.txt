@@ -116,3 +116,8 @@ assets/stamps/03/01.png ～ 32.png
 - シロコ返信の名前を「シロコ」に設定
 - NGワード送信時のユウカ警告表示は従来通り維持
 - README_warning_fix.txt は含めない
+
+
+変更内容:
+- シロコ返信スタンプを system-reply-stamp-bubble クラスへ変更
+- シロコ返信などユーザー以外のスタンプ返信を白枠表示へ変更

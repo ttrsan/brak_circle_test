@@ -319,7 +319,7 @@ function addShirokoReplyStampMessage() {
   nameLine.appendChild(name);
 
   const bubble = document.createElement("div");
-  bubble.className = "bubble stamp-bubble";
+  bubble.className = "bubble stamp-bubble system-reply-stamp-bubble";
 
   const image = document.createElement("img");
   image.className = "chat-stamp-image";

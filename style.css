@@ -929,3 +929,13 @@ body {
 .shiroko-reply-item .message-area {
   grid-column: auto !important;
 }
+
+
+/* ===== System reply stamp border ===== */
+/*
+  シロコ返信など、ユーザー以外のスタンプ返信は白枠にする。
+*/
+
+.system-reply-stamp-bubble {
+  border: 3px solid #ffffff !important;
+}
