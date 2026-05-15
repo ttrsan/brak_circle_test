@@ -1,6 +1,3 @@
-
-
-
 const stampBasePath = "assets/stamps";
 
 const stampCategories = [
@@ -8,7 +5,6 @@ const stampCategories = [
   { folder: "02", count: 20 },
   { folder: "03", count: 32 }
 ];
-
 
 const chatTab = document.getElementById("chatTab");
 const settingTab = document.getElementById("settingTab");
@@ -63,12 +59,8 @@ function escapeHtml(text) {
     .replaceAll(">", "&gt;");
 }
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function applyCensor(text) {
-  const protectedRanges = [];
+function createProtectedRanges(text) {
+  const ranges = [];
 
   for (const allowWord of allowWords) {
     const normalizedAllowWord = normalizeText(allowWord);
@@ -77,7 +69,7 @@ function applyCensor(text) {
       const target = text.slice(i, i + allowWord.length);
 
       if (normalizeText(target) === normalizedAllowWord) {
-        protectedRanges.push({
+        ranges.push({
           start: i,
           end: i + allowWord.length
         });
@@ -85,23 +77,63 @@ function applyCensor(text) {
     }
   }
 
-  function isProtected(index) {
-    return protectedRanges.some((range) => {
-      return index >= range.start && index < range.end;
-    });
+  return ranges;
+}
+
+function isProtected(index, ranges) {
+  return ranges.some((range) => {
+    return index >= range.start && index < range.end;
+  });
+}
+
+function detectNgAt(text, index, protectedRanges) {
+  const halfKanaMatch = text.slice(index).match(/^[ｦ-ﾟ]+/);
+
+  if (halfKanaMatch) {
+    return halfKanaMatch[0];
   }
+
+  if (isProtected(index, protectedRanges)) {
+    return "";
+  }
+
+  for (const word of ngWords) {
+    if (!word) {
+      continue;
+    }
+
+    const target = text.slice(index, index + word.length);
+
+    if (normalizeText(target) === normalizeText(word)) {
+      return target;
+    }
+  }
+
+  return "";
+}
+
+function containsNgWord(text) {
+  const protectedRanges = createProtectedRanges(text);
+
+  for (let index = 0; index < text.length; index++) {
+    if (detectNgAt(text, index, protectedRanges)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function applyCensor(text) {
+  const protectedRanges = createProtectedRanges(text);
 
   let result = "";
   let index = 0;
 
   while (index < text.length) {
-    let matched = false;
+    const target = detectNgAt(text, index, protectedRanges);
 
-    const halfKanaMatch = text.slice(index).match(/^[ｦ-ﾟ]+/);
-
-    if (halfKanaMatch) {
-      const target = halfKanaMatch[0];
-
+    if (target) {
       if (censorMode === "highlight") {
         result += `<span class="ng-word">${escapeHtml(target)}</span>`;
       } else {
@@ -112,35 +144,8 @@ function applyCensor(text) {
       continue;
     }
 
-    for (const word of ngWords) {
-      if (!word) {
-        continue;
-      }
-
-      if (isProtected(index)) {
-        continue;
-      }
-
-      const target = text.slice(index, index + word.length);
-
-      if (normalizeText(target) === normalizeText(word)) {
-        if (censorMode === "highlight") {
-          result += `<span class="ng-word">${escapeHtml(target)}</span>`;
-        } else {
-          result += "*".repeat(word.length);
-        }
-
-        index += word.length;
-        matched = true;
-
-        break;
-      }
-    }
-
-    if (!matched) {
-      result += escapeHtml(text[index]);
-      index += 1;
-    }
+    result += escapeHtml(text[index]);
+    index += 1;
   }
 
   return result;
@@ -222,6 +227,26 @@ function addImageStampMessage(imagePath) {
   scrollToBottom();
 }
 
+function addSystemWarningStampMessage() {
+  const item = document.createElement("article");
+  item.className = "chat-item system-warning-item";
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble system-warning-bubble";
+
+  const image = document.createElement("img");
+  image.className = "system-warning-image";
+  image.src = "assets/stamps/01/11.png";
+  image.alt = "warning";
+
+  bubble.appendChild(image);
+  item.appendChild(bubble);
+
+  chatLog.appendChild(item);
+
+  scrollToBottom();
+}
+
 function showChatView() {
   chatTab.classList.add("active");
   settingTab.classList.remove("active");
@@ -256,32 +281,26 @@ chatForm.addEventListener("submit", (event) => {
     return;
   }
 
+  const hasNgWord = containsNgWord(text);
+
   addMessage(text);
+
+  if (hasNgWord) {
+    addSystemWarningStampMessage();
+  }
 
   messageInput.value = "";
   messageInput.focus();
 });
 
-
-
-function updateSenderName() {
+senderNameInput.addEventListener("input", () => {
   senderName = senderNameInput.value.trim() || "先生";
-}
-
-function updateCensorMode() {
-  const selectedMode = document.querySelector(
-    'input[name="censorMode"]:checked'
-  );
-
-  if (selectedMode) {
-    censorMode = selectedMode.value;
-  }
-}
-
-senderNameInput.addEventListener("input", updateSenderName);
+});
 
 document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
-  radio.addEventListener("change", updateCensorMode);
+  radio.addEventListener("change", () => {
+    censorMode = radio.value;
+  });
 });
 
 clearChatButton.addEventListener("click", () => {
@@ -290,7 +309,6 @@ clearChatButton.addEventListener("click", () => {
 
 function createStampImagePath(folder, number) {
   const fileName = String(number).padStart(2, "0");
-
   return `${stampBasePath}/${folder}/${fileName}.png`;
 }
 
@@ -322,6 +340,18 @@ function createStampList() {
   }
 }
 
+function renderWordList(container, words) {
+  container.innerHTML = "";
+
+  for (const word of words) {
+    const item = document.createElement("div");
+    item.className = "word-list-item";
+    item.textContent = word;
+
+    container.appendChild(item);
+  }
+}
+
 faceButton.addEventListener("click", () => {
   stampModal.classList.remove("hidden");
 });
@@ -336,20 +366,8 @@ stampModal.addEventListener("click", (event) => {
   }
 });
 
-function renderNgWordList() {
-  ngWordList.innerHTML = "";
-
-  for (const word of ngWords) {
-    const item = document.createElement("div");
-    item.className = "ngword-list-item";
-    item.textContent = word;
-
-    ngWordList.appendChild(item);
-  }
-}
-
 openNgWordModalButton.addEventListener("click", () => {
-  renderNgWordList();
+  renderWordList(ngWordList, ngWords);
   ngWordModal.classList.remove("hidden");
 });
 
@@ -363,21 +381,8 @@ ngWordModal.addEventListener("click", (event) => {
   }
 });
 
-
-function renderAllowWordList() {
-  allowWordList.innerHTML = "";
-
-  for (const word of allowWords) {
-    const item = document.createElement("div");
-    item.className = "allowword-list-item";
-    item.textContent = word;
-
-    allowWordList.appendChild(item);
-  }
-}
-
 openAllowWordModalButton.addEventListener("click", () => {
-  renderAllowWordList();
+  renderWordList(allowWordList, allowWords);
   allowWordModal.classList.remove("hidden");
 });
 
@@ -390,7 +395,6 @@ allowWordModal.addEventListener("click", (event) => {
     allowWordModal.classList.add("hidden");
   }
 });
-
 
 openSiteInfoButton.addEventListener("click", () => {
   siteInfoModal.classList.remove("hidden");
@@ -407,6 +411,4 @@ siteInfoModal.addEventListener("click", (event) => {
 });
 
 createStampList();
-
-
 showChatView();

@@ -8,7 +8,8 @@
 </head>
 <body>
   <div class="bg"></div>
-<main class="layout">
+
+  <main class="layout">
     <section class="chat-panel">
       <div class="top-circle-info">
         <div class="top-circle-title-row">
@@ -27,7 +28,9 @@
 
         <form id="chatForm" class="input-area">
           <input id="messageInput" type="text" maxlength="140" placeholder="内容を入力してください。" autocomplete="off" />
-          <button class="face-button" type="button"><img class="stamp-button-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI4IDI4Ij4KICA8Y2lyY2xlIGN4PSIxNCIgY3k9IjE0IiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGE2MDcyIiBzdHJva2Utd2lkdGg9IjEuOCIvPgogIDxjaXJjbGUgY3g9IjEwLjUiIGN5PSIxMiIgcj0iMS4zIiBmaWxsPSIjNGE2MDcyIi8+CiAgPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjEyIiByPSIxLjMiIGZpbGw9IiM0YTYwNzIiLz4KICA8cGF0aCBkPSJNOS41IDE3YzEuMyAxLjMgMi44IDEuOSA0LjUgMS45UzE3LjIgMTguMyAxOC41IDE3IiBmaWxsPSJub25lIiBzdHJva2U9IiM0YTYwNzIiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+" alt="スタンプ"></button>
+          <button class="face-button" type="button" aria-label="スタンプを開く">
+            <img class="stamp-button-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOCIgaGVpZ2h0PSIyOCIgdmlld0JveD0iMCAwIDI4IDI4Ij4KICA8Y2lyY2xlIGN4PSIxNCIgY3k9IjE0IiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGE2MDcyIiBzdHJva2Utd2lkdGg9IjEuOCIvPgogIDxjaXJjbGUgY3g9IjEwLjUiIGN5PSIxMiIgcj0iMS4zIiBmaWxsPSIjNGE2MDcyIi8+CiAgPGNpcmNsZSBjeD0iMTcuNSIgY3k9IjEyIiByPSIxLjMiIGZpbGw9IiM0YTYwNzIiLz4KICA8cGF0aCBkPSJNOS41IDE3YzEuMyAxLjMgMi44IDEuOSA0LjUgMS45UzE3LjIgMTguMyAxOC41IDE3IiBmaWxsPSJub25lIiBzdHJva2U9IiM0YTYwNzIiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+" alt="スタンプ" />
+          </button>
           <button class="send-button" type="submit">送信する</button>
         </form>
       </div>
@@ -35,14 +38,24 @@
       <div id="settingView" class="view setting-view hidden">
         <div class="setting-card">
           <div class="setting-title">チャット設定</div>
+
           <label class="setting-label" for="senderNameInput">送信者名</label>
           <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
+
           <p class="setting-note">ここで設定した名前は、このページを開いている間だけ使用されます。</p>
 
           <div class="setting-group">
             <div class="setting-label">伏字モード</div>
-            <label class="radio-setting"><input type="radio" name="censorMode" value="highlight" checked><span>赤文字表示</span></label>
-            <label class="radio-setting"><input type="radio" name="censorMode" value="mask"><span>****表示</span></label>
+
+            <label class="radio-setting">
+              <input type="radio" name="censorMode" value="highlight" checked>
+              <span>赤文字表示</span>
+            </label>
+
+            <label class="radio-setting">
+              <input type="radio" name="censorMode" value="mask">
+              <span>****表示</span>
+            </label>
           </div>
 
           <button id="openNgWordModalButton" class="sub-button" type="button">NGワード一覧</button>
@@ -53,35 +66,6 @@
     </section>
   </main>
 
-  <div id="stampModal" class="modal hidden">
-    <div class="modal-window">
-      <div class="modal-header"><span>チャットスタンプ</span><button id="closeStampButton" class="modal-close" type="button">×</button></div>
-      <div class="modal-body"><div id="stampGrid" class="stamp-grid"></div></div>
-    </div>
-  </div>
-
-  <div id="ngWordModal" class="modal hidden">
-    <div class="modal-window ngword-window">
-      <div class="modal-header"><span>NGワード一覧</span><button id="closeNgWordModalButton" class="modal-close" type="button">×</button></div>
-      <div class="modal-body"><div id="ngWordList" class="ngword-list"></div></div>
-    </div>
-  </div>
-
-
-  <div id="allowWordModal" class="modal hidden">
-    <div class="modal-window allowword-window">
-      <div class="modal-header">
-        <span>許容ワード一覧</span>
-        <button id="closeAllowWordModalButton" class="modal-close" type="button">×</button>
-      </div>
-
-      <div class="modal-body">
-        <div id="allowWordList" class="allowword-list"></div>
-      </div>
-    </div>
-  </div>
-
-
   <div id="siteInfoModal" class="modal hidden">
     <div class="modal-window site-info-window">
       <div class="modal-header">
@@ -91,11 +75,49 @@
 
       <div class="modal-body site-info-body">
         <p>
-          ブルーアーカイブのサークルチャット風の非公式サイトです。<br>
-          禁止ワードの確認ができます。<br>
+          このサイトは、ブルーアーカイブのゲーム内チャットで使用できる文字・使用できない文字を確認するための、非公式の検証・練習サイトです。<br>
           Yostar / NEXON Games とは関係ありません。
         </p>
         <p class="site-info-credit">制作: @ttr_san</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="stampModal" class="modal hidden">
+    <div class="modal-window stamp-window">
+      <div class="modal-header">
+        <span>チャットスタンプ</span>
+        <button id="closeStampButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body stamp-body">
+        <div id="stampGrid" class="stamp-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ngWordModal" class="modal hidden">
+    <div class="modal-window ngword-window">
+      <div class="modal-header">
+        <span>NGワード一覧</span>
+        <button id="closeNgWordModalButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="ngWordList" class="word-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="allowWordModal" class="modal hidden">
+    <div class="modal-window allowword-window">
+      <div class="modal-header">
+        <span>許容ワード一覧</span>
+        <button id="closeAllowWordModalButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="allowWordList" class="word-list"></div>
       </div>
     </div>
   </div>
