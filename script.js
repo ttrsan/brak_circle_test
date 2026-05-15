@@ -42,6 +42,10 @@ let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
 
+const chatHistoryStorageKey = "baCircleChatHistoryV1";
+let chatHistory = [];
+let isRestoringChatHistory = false;
+
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
     return String.fromCharCode(char.charCodeAt(0) + 0x60);
@@ -153,7 +157,7 @@ function applyCensor(text) {
   return result;
 }
 
-function createNameLine() {
+function createNameLine(displayName = senderName) {
   const nameLine = document.createElement("div");
   nameLine.className = "name-line";
 
@@ -162,7 +166,7 @@ function createNameLine() {
   plate.textContent = "新任の先生";
 
   const name = document.createElement("strong");
-  name.textContent = senderName;
+  name.textContent = displayName;
 
   nameLine.appendChild(plate);
   nameLine.appendChild(name);
@@ -170,11 +174,13 @@ function createNameLine() {
   return nameLine;
 }
 
-function createChatItem() {
+function createChatItem(displayName = senderName, compactOverride = null) {
   const item = document.createElement("article");
   item.className = "chat-item";
 
-  if (compactMode && lastUserMessageSenderName === senderName) {
+  const shouldCompact = compactOverride ?? (compactMode && lastUserMessageSenderName === displayName);
+
+  if (shouldCompact) {
     item.classList.add("compact");
   }
 
@@ -184,16 +190,17 @@ function createChatItem() {
 
   const messageArea = document.createElement("div");
   messageArea.className = "message-area";
-  messageArea.appendChild(createNameLine());
+  messageArea.appendChild(createNameLine(displayName));
 
   item.appendChild(avatar);
   item.appendChild(messageArea);
 
-  lastUserMessageSenderName = senderName;
+  lastUserMessageSenderName = displayName;
 
   return {
     item,
-    messageArea
+    messageArea,
+    isCompact: shouldCompact
   };
 }
 
@@ -203,8 +210,27 @@ function scrollToBottom() {
   });
 }
 
-function addMessage(text) {
-  const { item, messageArea } = createChatItem();
+function saveChatHistory() {
+  if (isRestoringChatHistory) {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      chatHistoryStorageKey,
+      JSON.stringify({
+        version: 1,
+        messages: chatHistory
+      })
+    );
+  } catch (error) {
+    console.warn("チャット履歴の保存に失敗しました。", error);
+  }
+}
+
+function addMessage(text, options = {}) {
+  const displayName = options.senderName ?? senderName;
+  const { item, messageArea, isCompact } = createChatItem(displayName, options.compact ?? null);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
@@ -213,11 +239,22 @@ function addMessage(text) {
   messageArea.appendChild(bubble);
   chatLog.appendChild(item);
 
+  if (options.save !== false) {
+    chatHistory.push({
+      type: "text",
+      senderName: displayName,
+      text,
+      compact: isCompact
+    });
+    saveChatHistory();
+  }
+
   scrollToBottom();
 }
 
-function addImageStampMessage(imagePath) {
-  const { item, messageArea } = createChatItem();
+function addImageStampMessage(imagePath, options = {}) {
+  const displayName = options.senderName ?? senderName;
+  const { item, messageArea, isCompact } = createChatItem(displayName, options.compact ?? null);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble stamp-bubble";
@@ -232,10 +269,20 @@ function addImageStampMessage(imagePath) {
 
   chatLog.appendChild(item);
 
+  if (options.save !== false) {
+    chatHistory.push({
+      type: "stamp",
+      senderName: displayName,
+      imagePath,
+      compact: isCompact
+    });
+    saveChatHistory();
+  }
+
   scrollToBottom();
 }
 
-function addSystemWarningStampMessage() {
+function addSystemWarningStampMessage(options = {}) {
   lastUserMessageSenderName = "__system__";
 
   const item = document.createElement("article");
@@ -289,11 +336,18 @@ function addSystemWarningStampMessage() {
 
   chatLog.appendChild(item);
 
+  if (options.save !== false) {
+    chatHistory.push({
+      type: "systemWarning"
+    });
+    saveChatHistory();
+  }
+
   scrollToBottom();
 }
 
 
-function addShirokoReplyStampMessage() {
+function addShirokoReplyStampMessage(options = {}) {
   lastUserMessageSenderName = "__shiroko__";
 
   const item = document.createElement("article");
@@ -343,7 +397,85 @@ function addShirokoReplyStampMessage() {
 
   chatLog.appendChild(item);
 
+  if (options.save !== false) {
+    chatHistory.push({
+      type: "shirokoReplyStamp"
+    });
+    saveChatHistory();
+  }
+
   scrollToBottom();
+}
+
+function restoreChatHistory() {
+  const savedHistoryText = localStorage.getItem(chatHistoryStorageKey);
+
+  if (!savedHistoryText) {
+    return;
+  }
+
+  try {
+    const savedHistory = JSON.parse(savedHistoryText);
+
+    if (!savedHistory || savedHistory.version !== 1 || !Array.isArray(savedHistory.messages)) {
+      return;
+    }
+
+    chatLog.innerHTML = "";
+    chatHistory = [];
+    lastUserMessageSenderName = "";
+    isRestoringChatHistory = true;
+
+    for (const message of savedHistory.messages) {
+      if (message.type === "text") {
+        addMessage(message.text || "", {
+          senderName: message.senderName || "先生",
+          compact: Boolean(message.compact),
+          save: false
+        });
+
+        chatHistory.push({
+          type: "text",
+          senderName: message.senderName || "先生",
+          text: message.text || "",
+          compact: Boolean(message.compact)
+        });
+        continue;
+      }
+
+      if (message.type === "stamp") {
+        addImageStampMessage(message.imagePath || "", {
+          senderName: message.senderName || "先生",
+          compact: Boolean(message.compact),
+          save: false
+        });
+
+        chatHistory.push({
+          type: "stamp",
+          senderName: message.senderName || "先生",
+          imagePath: message.imagePath || "",
+          compact: Boolean(message.compact)
+        });
+        continue;
+      }
+
+      if (message.type === "systemWarning") {
+        addSystemWarningStampMessage({ save: false });
+        chatHistory.push({ type: "systemWarning" });
+        continue;
+      }
+
+      if (message.type === "shirokoReplyStamp") {
+        addShirokoReplyStampMessage({ save: false });
+        chatHistory.push({ type: "shirokoReplyStamp" });
+      }
+    }
+  } catch (error) {
+    console.warn("チャット履歴の復元に失敗しました。", error);
+  } finally {
+    isRestoringChatHistory = false;
+    scrollToBottom();
+  }
 }
 
 function showChatView() {
@@ -411,6 +543,8 @@ document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
 clearChatButton.addEventListener("click", () => {
   chatLog.innerHTML = "";
   lastUserMessageSenderName = "";
+  chatHistory = [];
+  localStorage.removeItem(chatHistoryStorageKey);
 });
 
 function createStampImagePath(folder, number) {
@@ -522,4 +656,5 @@ siteInfoModal.addEventListener("click", (event) => {
 });
 
 createStampList();
+restoreChatHistory();
 showChatView();
