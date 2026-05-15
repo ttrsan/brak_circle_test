@@ -799,3 +799,16 @@ body {
     }
   }
 }
+
+
+/* ===== Stamp bubble blue border ===== */
+/* 通常スタンプ投稿: 白背景 + 濃い青枠 */
+/* system-warning-bubble は別指定のため変更しない */
+.stamp-bubble {
+  background: #ffffff !important;
+
+  border: 3px solid #1f4f82;
+
+  box-shadow:
+    0 2px 6px rgba(26, 58, 96, 0.22);
+}

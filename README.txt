@@ -15,3 +15,9 @@ index.html と同じ階層に assets フォルダを置いてください。
 assets/stamps/01/01.png ～ 20.png
 assets/stamps/02/01.png ～ 20.png
 assets/stamps/03/01.png ～ 32.png
+
+
+変更内容:
+- 通常スタンプ投稿の背景を白に固定
+- 通常スタンプ投稿の外枠を濃い青に変更
+- 警告スタンプ system-warning-bubble は変更なし
