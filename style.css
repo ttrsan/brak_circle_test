@@ -948,3 +948,35 @@ body {
   padding: 0;
   background: #ffffff !important;
 }
+
+
+/* ===== Compact consecutive user messages ===== */
+/*
+  同じユーザーの投稿が続く場合、
+  設定に応じて2件目以降のアイコン・称号プレート・ユーザー名を省略する。
+*/
+
+.chat-item.compact .avatar,
+.chat-item.compact .name-line {
+  display: none !important;
+}
+
+.chat-item.compact {
+  grid-template-columns: 78px minmax(0, 1fr);
+  margin-top: -4px;
+}
+
+.chat-item.compact .message-area {
+  grid-column: 2;
+}
+
+@media (max-width: 640px) {
+  .chat-item.compact {
+    grid-template-columns: 42px minmax(0, 1fr);
+    margin-top: -3px;
+  }
+
+  .chat-item.compact .message-area {
+    grid-column: 2;
+  }
+}

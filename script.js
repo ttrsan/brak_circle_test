@@ -40,6 +40,7 @@ const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 let senderName = "先生";
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
+let compactMode = true;
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -173,7 +174,7 @@ function createChatItem() {
   const item = document.createElement("article");
   item.className = "chat-item";
 
-  if (lastUserMessageSenderName === senderName) {
+  if (compactMode && lastUserMessageSenderName === senderName) {
     item.classList.add("compact");
   }
 
@@ -398,6 +399,12 @@ senderNameInput.addEventListener("input", () => {
 document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     censorMode = radio.value;
+  });
+});
+
+document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    compactMode = radio.value === "on";
   });
 });
 
