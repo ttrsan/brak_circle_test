@@ -6,6 +6,13 @@ const stampCategories = [
   { folder: "03", count: 32 }
 ];
 
+const chatStorageKey = "baChatSave";
+const settingsStorageKey = "baSettings";
+const storageVersion = 1;
+
+let chatHistory = [];
+let isRestoringChat = false;
+
 const chatTab = document.getElementById("chatTab");
 const settingTab = document.getElementById("settingTab");
 const chatView = document.getElementById("chatView");
@@ -41,10 +48,6 @@ let senderName = "先生";
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
-
-const chatHistoryStorageKey = "baCircleChatHistoryV1";
-let chatHistory = [];
-let isRestoringChatHistory = false;
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -174,13 +177,11 @@ function createNameLine(displayName = senderName) {
   return nameLine;
 }
 
-function createChatItem(displayName = senderName, compactOverride = null) {
+function createChatItem(displayName = senderName) {
   const item = document.createElement("article");
   item.className = "chat-item";
 
-  const shouldCompact = compactOverride ?? (compactMode && lastUserMessageSenderName === displayName);
-
-  if (shouldCompact) {
+  if (compactMode && lastUserMessageSenderName === displayName) {
     item.classList.add("compact");
   }
 
@@ -199,9 +200,110 @@ function createChatItem(displayName = senderName, compactOverride = null) {
 
   return {
     item,
-    messageArea,
-    isCompact: shouldCompact
+    messageArea
   };
+}
+
+
+function saveSettings() {
+  const settings = {
+    version: storageVersion,
+    senderName,
+    censorMode,
+    compactMode
+  };
+
+  localStorage.setItem(settingsStorageKey, JSON.stringify(settings));
+}
+
+function loadSettings() {
+  try {
+    const rawSettings = localStorage.getItem(settingsStorageKey);
+
+    if (!rawSettings) {
+      return;
+    }
+
+    const settings = JSON.parse(rawSettings);
+
+    if (settings.version !== storageVersion) {
+      return;
+    }
+
+    senderName = settings.senderName || "先生";
+    censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
+    compactMode = settings.compactMode !== false;
+
+    senderNameInput.value = senderName;
+
+    const censorRadio = document.querySelector(`input[name="censorMode"][value="${censorMode}"]`);
+    if (censorRadio) {
+      censorRadio.checked = true;
+    }
+
+    const compactRadioValue = compactMode ? "on" : "off";
+    const compactRadio = document.querySelector(`input[name="compactMode"][value="${compactRadioValue}"]`);
+    if (compactRadio) {
+      compactRadio.checked = true;
+    }
+  } catch (error) {
+    console.warn("設定の復元に失敗しました。", error);
+  }
+}
+
+function saveChatHistory() {
+  const saveData = {
+    version: storageVersion,
+    messages: chatHistory
+  };
+
+  localStorage.setItem(chatStorageKey, JSON.stringify(saveData));
+}
+
+function pushChatHistory(message) {
+  if (isRestoringChat) {
+    return;
+  }
+
+  chatHistory.push(message);
+  saveChatHistory();
+}
+
+function restoreChatHistory() {
+  try {
+    const rawChat = localStorage.getItem(chatStorageKey);
+
+    if (!rawChat) {
+      return;
+    }
+
+    const saveData = JSON.parse(rawChat);
+
+    if (saveData.version !== storageVersion || !Array.isArray(saveData.messages)) {
+      return;
+    }
+
+    isRestoringChat = true;
+    chatHistory = saveData.messages;
+    chatLog.innerHTML = "";
+    lastUserMessageSenderName = "";
+
+    for (const message of chatHistory) {
+      if (message.type === "text") {
+        addMessage(message.text || "", message.name || "先生");
+      } else if (message.type === "stamp") {
+        addImageStampMessage(message.imagePath || "", message.name || "先生");
+      } else if (message.type === "systemWarning") {
+        addSystemWarningStampMessage();
+      } else if (message.type === "shirokoReply") {
+        addShirokoReplyStampMessage();
+      }
+    }
+  } catch (error) {
+    console.warn("チャット履歴の復元に失敗しました。", error);
+  } finally {
+    isRestoringChat = false;
+  }
 }
 
 function scrollToBottom() {
@@ -210,27 +312,8 @@ function scrollToBottom() {
   });
 }
 
-function saveChatHistory() {
-  if (isRestoringChatHistory) {
-    return;
-  }
-
-  try {
-    localStorage.setItem(
-      chatHistoryStorageKey,
-      JSON.stringify({
-        version: 1,
-        messages: chatHistory
-      })
-    );
-  } catch (error) {
-    console.warn("チャット履歴の保存に失敗しました。", error);
-  }
-}
-
-function addMessage(text, options = {}) {
-  const displayName = options.senderName ?? senderName;
-  const { item, messageArea, isCompact } = createChatItem(displayName, options.compact ?? null);
+function addMessage(text, displayName = senderName) {
+  const { item, messageArea } = createChatItem(displayName);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
@@ -239,22 +322,17 @@ function addMessage(text, options = {}) {
   messageArea.appendChild(bubble);
   chatLog.appendChild(item);
 
-  if (options.save !== false) {
-    chatHistory.push({
-      type: "text",
-      senderName: displayName,
-      text,
-      compact: isCompact
-    });
-    saveChatHistory();
-  }
-
   scrollToBottom();
+
+  pushChatHistory({
+    type: "text",
+    name: displayName,
+    text
+  });
 }
 
-function addImageStampMessage(imagePath, options = {}) {
-  const displayName = options.senderName ?? senderName;
-  const { item, messageArea, isCompact } = createChatItem(displayName, options.compact ?? null);
+function addImageStampMessage(imagePath, displayName = senderName) {
+  const { item, messageArea } = createChatItem(displayName);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble stamp-bubble";
@@ -269,20 +347,16 @@ function addImageStampMessage(imagePath, options = {}) {
 
   chatLog.appendChild(item);
 
-  if (options.save !== false) {
-    chatHistory.push({
-      type: "stamp",
-      senderName: displayName,
-      imagePath,
-      compact: isCompact
-    });
-    saveChatHistory();
-  }
-
   scrollToBottom();
+
+  pushChatHistory({
+    type: "stamp",
+    name: displayName,
+    imagePath
+  });
 }
 
-function addSystemWarningStampMessage(options = {}) {
+function addSystemWarningStampMessage() {
   lastUserMessageSenderName = "__system__";
 
   const item = document.createElement("article");
@@ -336,18 +410,15 @@ function addSystemWarningStampMessage(options = {}) {
 
   chatLog.appendChild(item);
 
-  if (options.save !== false) {
-    chatHistory.push({
-      type: "systemWarning"
-    });
-    saveChatHistory();
-  }
-
   scrollToBottom();
+
+  pushChatHistory({
+    type: "systemWarning"
+  });
 }
 
 
-function addShirokoReplyStampMessage(options = {}) {
+function addShirokoReplyStampMessage() {
   lastUserMessageSenderName = "__shiroko__";
 
   const item = document.createElement("article");
@@ -397,85 +468,11 @@ function addShirokoReplyStampMessage(options = {}) {
 
   chatLog.appendChild(item);
 
-  if (options.save !== false) {
-    chatHistory.push({
-      type: "shirokoReplyStamp"
-    });
-    saveChatHistory();
-  }
-
   scrollToBottom();
-}
 
-function restoreChatHistory() {
-  const savedHistoryText = localStorage.getItem(chatHistoryStorageKey);
-
-  if (!savedHistoryText) {
-    return;
-  }
-
-  try {
-    const savedHistory = JSON.parse(savedHistoryText);
-
-    if (!savedHistory || savedHistory.version !== 1 || !Array.isArray(savedHistory.messages)) {
-      return;
-    }
-
-    chatLog.innerHTML = "";
-    chatHistory = [];
-    lastUserMessageSenderName = "";
-    isRestoringChatHistory = true;
-
-    for (const message of savedHistory.messages) {
-      if (message.type === "text") {
-        addMessage(message.text || "", {
-          senderName: message.senderName || "先生",
-          compact: Boolean(message.compact),
-          save: false
-        });
-
-        chatHistory.push({
-          type: "text",
-          senderName: message.senderName || "先生",
-          text: message.text || "",
-          compact: Boolean(message.compact)
-        });
-        continue;
-      }
-
-      if (message.type === "stamp") {
-        addImageStampMessage(message.imagePath || "", {
-          senderName: message.senderName || "先生",
-          compact: Boolean(message.compact),
-          save: false
-        });
-
-        chatHistory.push({
-          type: "stamp",
-          senderName: message.senderName || "先生",
-          imagePath: message.imagePath || "",
-          compact: Boolean(message.compact)
-        });
-        continue;
-      }
-
-      if (message.type === "systemWarning") {
-        addSystemWarningStampMessage({ save: false });
-        chatHistory.push({ type: "systemWarning" });
-        continue;
-      }
-
-      if (message.type === "shirokoReplyStamp") {
-        addShirokoReplyStampMessage({ save: false });
-        chatHistory.push({ type: "shirokoReplyStamp" });
-      }
-    }
-  } catch (error) {
-    console.warn("チャット履歴の復元に失敗しました。", error);
-  } finally {
-    isRestoringChatHistory = false;
-    scrollToBottom();
-  }
+  pushChatHistory({
+    type: "shirokoReply"
+  });
 }
 
 function showChatView() {
@@ -526,17 +523,20 @@ chatForm.addEventListener("submit", (event) => {
 
 senderNameInput.addEventListener("input", () => {
   senderName = senderNameInput.value.trim() || "先生";
+  saveSettings();
 });
 
 document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     censorMode = radio.value;
+    saveSettings();
   });
 });
 
 document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     compactMode = radio.value === "on";
+    saveSettings();
   });
 });
 
@@ -544,7 +544,7 @@ clearChatButton.addEventListener("click", () => {
   chatLog.innerHTML = "";
   lastUserMessageSenderName = "";
   chatHistory = [];
-  localStorage.removeItem(chatHistoryStorageKey);
+  localStorage.removeItem(chatStorageKey);
 });
 
 function createStampImagePath(folder, number) {
@@ -655,6 +655,7 @@ siteInfoModal.addEventListener("click", (event) => {
   }
 });
 
+loadSettings();
 createStampList();
 restoreChatHistory();
 showChatView();

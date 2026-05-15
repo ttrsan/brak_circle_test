@@ -484,7 +484,9 @@ body {
 /* Settings */
 
 .setting-card {
-  max-width: 560px;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
   padding: 22px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.88);
