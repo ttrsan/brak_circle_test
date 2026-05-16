@@ -3,7 +3,7 @@ const senderProfiles = {
     name: "先生",
     title: "新任の先生",
     plateClass: "gold",
-    icon: null,
+    icon: "assets/icons/schale/sensei.png",
     avatarText: "S",
     useCustomName: true
   },
