@@ -48,6 +48,7 @@ let senderName = "先生";
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
+let deleteMode = false;
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -210,7 +211,8 @@ function saveSettings() {
     version: storageVersion,
     senderName,
     censorMode,
-    compactMode
+    compactMode,
+    deleteMode
   };
 
   localStorage.setItem(settingsStorageKey, JSON.stringify(settings));
@@ -233,6 +235,7 @@ function loadSettings() {
     senderName = settings.senderName || "先生";
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
+    deleteMode = settings.deleteMode === true;
 
     senderNameInput.value = senderName;
 
@@ -246,9 +249,40 @@ function loadSettings() {
     if (compactRadio) {
       compactRadio.checked = true;
     }
+
+    const deleteRadioValue = deleteMode ? "on" : "off";
+    const deleteRadio = document.querySelector(`input[name="deleteMode"][value="${deleteRadioValue}"]`);
+    if (deleteRadio) {
+      deleteRadio.checked = true;
+    }
   } catch (error) {
     console.warn("設定の復元に失敗しました。", error);
   }
+}
+
+function updateDeleteModeDisplay() {
+  chatLog.classList.toggle("delete-mode", deleteMode);
+}
+
+function renderChatHistory() {
+  isRestoringChat = true;
+  chatLog.innerHTML = "";
+  lastUserMessageSenderName = "";
+
+  for (const message of chatHistory) {
+    if (message.type === "text") {
+      addMessage(message.text || "", message.name || "先生");
+    } else if (message.type === "stamp") {
+      addImageStampMessage(message.imagePath || "", message.name || "先生");
+    } else if (message.type === "systemWarning") {
+      addSystemWarningStampMessage();
+    } else if (message.type === "shirokoReply") {
+      addShirokoReplyStampMessage();
+    }
+  }
+
+  isRestoringChat = false;
+  updateDeleteModeDisplay();
 }
 
 function saveChatHistory() {
@@ -283,22 +317,8 @@ function restoreChatHistory() {
       return;
     }
 
-    isRestoringChat = true;
     chatHistory = saveData.messages;
-    chatLog.innerHTML = "";
-    lastUserMessageSenderName = "";
-
-    for (const message of chatHistory) {
-      if (message.type === "text") {
-        addMessage(message.text || "", message.name || "先生");
-      } else if (message.type === "stamp") {
-        addImageStampMessage(message.imagePath || "", message.name || "先生");
-      } else if (message.type === "systemWarning") {
-        addSystemWarningStampMessage();
-      } else if (message.type === "shirokoReply") {
-        addShirokoReplyStampMessage();
-      }
-    }
+    renderChatHistory();
   } catch (error) {
     console.warn("チャット履歴の復元に失敗しました。", error);
   } finally {
@@ -540,11 +560,43 @@ document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
   });
 });
 
+document.querySelectorAll('input[name="deleteMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    deleteMode = radio.value === "on";
+    updateDeleteModeDisplay();
+    saveSettings();
+  });
+});
+
+chatLog.addEventListener("click", (event) => {
+  if (!deleteMode) {
+    return;
+  }
+
+  const item = event.target.closest(".chat-item");
+
+  if (!item || !chatLog.contains(item)) {
+    return;
+  }
+
+  const items = Array.from(chatLog.querySelectorAll(".chat-item"));
+  const index = items.indexOf(item);
+
+  if (index < 0) {
+    return;
+  }
+
+  chatHistory.splice(index, 1);
+  renderChatHistory();
+  saveChatHistory();
+});
+
 clearChatButton.addEventListener("click", () => {
   chatLog.innerHTML = "";
   lastUserMessageSenderName = "";
   chatHistory = [];
   localStorage.removeItem(chatStorageKey);
+  updateDeleteModeDisplay();
 });
 
 function createStampImagePath(folder, number) {
@@ -658,4 +710,5 @@ siteInfoModal.addEventListener("click", (event) => {
 loadSettings();
 createStampList();
 restoreChatHistory();
+updateDeleteModeDisplay();
 showChatView();

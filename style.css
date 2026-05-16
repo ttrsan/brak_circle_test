@@ -982,3 +982,36 @@ body {
     grid-column: 2;
   }
 }
+
+
+/* ===== Delete mode ===== */
+.chat-log.delete-mode .chat-item {
+  position: relative;
+  cursor: pointer;
+}
+
+.chat-log.delete-mode .chat-item::after {
+  content: "×";
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  background: rgba(255, 84, 100, 0.92);
+  box-shadow: 0 2px 5px rgba(55, 80, 110, 0.24);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.chat-log.delete-mode .chat-item:hover .bubble,
+.chat-log.delete-mode .chat-item:hover .warning-stamp-card {
+  filter: brightness(1.08);
+  outline: 2px solid rgba(255, 84, 100, 0.45);
+}
