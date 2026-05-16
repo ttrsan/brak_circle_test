@@ -53,12 +53,13 @@ let senderName = "先生";
 let currentSenderId = "sensei";
 
 function resizeMessageInput() {
+  // 入力欄は見た目を1行固定にするため、自動拡張は行いません。
+  // textarea自体は維持しているので、Shift + Enter の改行データは保持できます。
   if (!messageInput) {
     return;
   }
 
-  messageInput.style.height = "auto";
-  messageInput.style.height = `${messageInput.scrollHeight}px`;
+  messageInput.scrollTop = messageInput.scrollHeight;
 }
 let senderSelectorVisible = false;
 let censorMode = "highlight";

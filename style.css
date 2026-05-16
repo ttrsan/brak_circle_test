@@ -1094,3 +1094,39 @@ body {
   background-image: none !important;
   border-color: #ffffff !important;
 }
+
+
+/* One-line input override */
+#messageInput {
+  height: 54px !important;
+  min-height: 54px !important;
+  max-height: 54px !important;
+  overflow-y: hidden !important;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+  .input-area {
+    grid-template-columns: minmax(0, 1fr) 38px 82px !important;
+    grid-template-rows: 36px !important;
+    grid-template-areas: "message face send" !important;
+    align-items: center !important;
+  }
+
+  .input-area.sender-select-visible {
+    grid-template-columns: minmax(0, 1fr) 38px 82px !important;
+    grid-template-rows: 36px 36px !important;
+    grid-template-areas:
+      "sender sender sender"
+      "message face send" !important;
+  }
+
+  #messageInput {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 6px 8px !important;
+    overflow-y: hidden !important;
+    line-height: 1.2 !important;
+  }
+}
