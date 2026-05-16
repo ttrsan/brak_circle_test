@@ -54,6 +54,7 @@ let lastUserMessageSenderName = "";
 let compactMode = true;
 let deleteMode = false;
 let ngResponseEnabled = true;
+let storageEnabled = false;
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -212,8 +213,14 @@ function createChatItem(displayName = senderName) {
 
 
 function saveSettings() {
+  if (!storageEnabled) {
+    localStorage.removeItem(settingsStorageKey);
+    return;
+  }
+
   const settings = {
     version: storageVersion,
+    storageEnabled,
     senderName,
     censorMode,
     compactMode,
@@ -234,10 +241,11 @@ function loadSettings() {
 
     const settings = JSON.parse(rawSettings);
 
-    if (settings.version !== storageVersion) {
+    if (settings.version !== storageVersion || settings.storageEnabled !== true) {
       return;
     }
 
+    storageEnabled = true;
     senderName = settings.senderName || "先生";
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
@@ -245,6 +253,11 @@ function loadSettings() {
     ngResponseEnabled = settings.ngResponseEnabled !== false;
 
     senderNameInput.value = senderName;
+
+    const storageRadio = document.querySelector('input[name="storageMode"][value="on"]');
+    if (storageRadio) {
+      storageRadio.checked = true;
+    }
 
     const censorRadio = document.querySelector(`input[name="censorMode"][value="${censorMode}"]`);
     if (censorRadio) {
@@ -299,6 +312,10 @@ function renderChatHistory() {
 }
 
 function saveChatHistory() {
+  if (!storageEnabled) {
+    return;
+  }
+
   const saveData = {
     version: storageVersion,
     messages: chatHistory
@@ -317,6 +334,10 @@ function pushChatHistory(message) {
 }
 
 function restoreChatHistory() {
+  if (!storageEnabled) {
+    return;
+  }
+
   try {
     const rawChat = localStorage.getItem(chatStorageKey);
 
@@ -557,6 +578,20 @@ chatForm.addEventListener("submit", (event) => {
 senderNameInput.addEventListener("input", () => {
   senderName = senderNameInput.value.trim() || "先生";
   saveSettings();
+});
+
+document.querySelectorAll('input[name="storageMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    storageEnabled = radio.value === "on";
+
+    if (storageEnabled) {
+      saveSettings();
+      saveChatHistory();
+    } else {
+      localStorage.removeItem(settingsStorageKey);
+      localStorage.removeItem(chatStorageKey);
+    }
+  });
 });
 
 document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
