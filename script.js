@@ -33,6 +33,10 @@ const mainStudentSettingRow = document.getElementById("mainStudentSettingRow");
 const clearChatButton = document.getElementById("clearChatButton");
 const createShareUrlButton = document.getElementById("createShareUrlButton");
 const shareUrlStatus = document.getElementById("shareUrlStatus");
+const senderSelectorToggle = document.getElementById("senderSelectorToggle");
+const ngResponseToggle = document.getElementById("ngResponseToggle");
+const editModeToggle = document.getElementById("editModeToggle");
+const storageModeToggle = document.getElementById("storageModeToggle");
 
 const stampModal = document.getElementById("stampModal");
 const closeStampButton = document.getElementById("closeStampButton");
@@ -64,6 +68,34 @@ let senderName = "先生";
 let mainSenderMode = "sensei";
 let mainStudentId = "yuuka";
 let currentSenderId = "sensei";
+
+
+function setRadioChecked(name, value) {
+  const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+  if (radio) {
+    radio.checked = true;
+  }
+}
+
+function syncSettingToggles() {
+  if (senderSelectorToggle) {
+    senderSelectorToggle.checked = senderSelectorVisible;
+  }
+  if (ngResponseToggle) {
+    ngResponseToggle.checked = ngResponseEnabled;
+  }
+  if (editModeToggle) {
+    editModeToggle.checked = editMode;
+  }
+  if (storageModeToggle) {
+    storageModeToggle.checked = storageEnabled;
+  }
+
+  setRadioChecked("senderSelectorMode", senderSelectorVisible ? "on" : "off");
+  setRadioChecked("ngResponseMode", ngResponseEnabled ? "on" : "off");
+  setRadioChecked("editMode", editMode ? "on" : "off");
+  setRadioChecked("storageMode", storageEnabled ? "on" : "off");
+}
 
 function resizeMessageInput() {
   // 入力欄は見た目を1行固定にするため、自動拡張は行いません。
@@ -180,6 +212,7 @@ function applySharedSettings(settings = {}) {
 
   updateMainSenderSettingsDisplay();
   updateSenderSelectorDisplay();
+  syncSettingToggles();
 }
 
 function getSharedPayloadFromUrl() {
@@ -571,6 +604,8 @@ function loadSettings() {
     if (editRadio) {
       editRadio.checked = true;
     }
+
+    syncSettingToggles();
   } catch (error) {
     console.warn("設定の復元に失敗しました。", error);
   }
@@ -950,6 +985,49 @@ currentSenderSelect.addEventListener("change", () => {
   saveSettings();
 });
 
+
+if (senderSelectorToggle) {
+  senderSelectorToggle.addEventListener("change", () => {
+    senderSelectorVisible = senderSelectorToggle.checked;
+    setRadioChecked("senderSelectorMode", senderSelectorVisible ? "on" : "off");
+    updateSenderSelectorDisplay();
+    syncSettingToggles();
+    saveSettings();
+  });
+}
+
+if (ngResponseToggle) {
+  ngResponseToggle.addEventListener("change", () => {
+    ngResponseEnabled = ngResponseToggle.checked;
+    setRadioChecked("ngResponseMode", ngResponseEnabled ? "on" : "off");
+    saveSettings();
+  });
+}
+
+if (editModeToggle) {
+  editModeToggle.addEventListener("change", () => {
+    editMode = editModeToggle.checked;
+    setRadioChecked("editMode", editMode ? "on" : "off");
+    renderChatHistory();
+    saveSettings();
+  });
+}
+
+if (storageModeToggle) {
+  storageModeToggle.addEventListener("change", () => {
+    storageEnabled = storageModeToggle.checked;
+    setRadioChecked("storageMode", storageEnabled ? "on" : "off");
+
+    if (storageEnabled) {
+      saveSettings();
+      saveChatHistory();
+    } else {
+      localStorage.removeItem(settingsStorageKey);
+      localStorage.removeItem(chatStorageKey);
+    }
+  });
+}
+
 document.querySelectorAll('input[name="senderSelectorMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     senderSelectorVisible = radio.value === "on";
@@ -961,6 +1039,7 @@ document.querySelectorAll('input[name="senderSelectorMode"]').forEach((radio) =>
 document.querySelectorAll('input[name="storageMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     storageEnabled = radio.value === "on";
+    syncSettingToggles();
 
     if (storageEnabled) {
       saveSettings();
@@ -991,6 +1070,7 @@ document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
 document.querySelectorAll('input[name="ngResponseMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     ngResponseEnabled = radio.value === "on";
+    syncSettingToggles();
     saveSettings();
   });
 });
@@ -999,6 +1079,7 @@ document.querySelectorAll('input[name="ngResponseMode"]').forEach((radio) => {
 document.querySelectorAll('input[name="editMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     editMode = radio.value === "on";
+    syncSettingToggles();
     renderChatHistory();
     saveSettings();
   });
