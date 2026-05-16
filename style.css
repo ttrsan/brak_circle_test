@@ -295,6 +295,7 @@ body {
   display: inline-grid;
   place-items: center;
   padding: 4px !important;
+  border: 3px solid #1f4f82;
   background: #ffffff !important;
 }
 
@@ -304,8 +305,6 @@ body {
   display: block;
   object-fit: contain;
 }
-
-
 
 
 /* System warning */
@@ -377,7 +376,7 @@ body {
   background-color: #ffffff !important;
   background-image: none !important;
 
-  border: 3px solid #1f4f82;
+  border: 3px solid #ffffff;
   border-radius: 6px;
 
   box-shadow:
@@ -426,15 +425,21 @@ body {
   flex: 0 0 62px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 52px 132px;
+  grid-template-rows: 54px;
+  grid-template-areas: "message face send";
+  align-items: center;
   gap: 10px;
   padding: 0 8px 8px;
 }
 
 .input-area.sender-select-visible {
   grid-template-columns: 118px minmax(0, 1fr) 52px 132px;
+  grid-template-areas: "sender message face send";
 }
 
 .sender-select {
+  grid-area: sender;
+  width: 100%;
   min-width: 0;
   height: 54px;
   padding: 0 10px;
@@ -447,6 +452,7 @@ body {
 }
 
 #messageInput {
+  grid-area: message;
   min-width: 0;
   height: 54px;
   padding: 0 16px;
@@ -459,6 +465,7 @@ body {
 }
 
 .face-button {
+  grid-area: face;
   height: 54px;
   display: flex;
   align-items: center;
@@ -491,6 +498,11 @@ body {
   font-size: 25px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.send-button {
+  grid-area: send;
+  white-space: nowrap;
 }
 
 .send-button:hover,
@@ -774,16 +786,6 @@ body {
     font-size: 20px;
   }
 
-  .input-area.sender-select-visible {
-    grid-template-columns: 88px minmax(0, 1fr) 38px 82px;
-  }
-
-  .sender-select {
-    height: 36px;
-    padding: 0 6px;
-    font-size: 13px;
-  }
-
   .tabs {
     flex: 0 0 38px;
     min-height: 38px;
@@ -853,21 +855,46 @@ body {
   .input-area {
     flex: 0 0 44px;
     grid-template-columns: minmax(0, 1fr) 38px 82px;
+    grid-template-rows: 36px;
+    grid-template-areas: "message face send";
     gap: 4px;
     padding: 3px 4px;
     background: rgba(216, 231, 240, 0.98);
     border-bottom: 1px solid rgba(84, 118, 145, 0.18);
   }
 
+  .input-area.sender-select-visible {
+    flex: 0 0 84px;
+    grid-template-columns: minmax(0, 1fr) 38px 82px;
+    grid-template-rows: 36px 36px;
+    grid-template-areas:
+      "sender sender sender"
+      "message face send";
+  }
+
+  .sender-select,
   #messageInput,
   .face-button,
   .send-button {
+    width: 100%;
+    min-width: 0;
     height: 36px;
+    box-sizing: border-box;
     font-size: 14px;
+  }
+
+  .sender-select {
+    padding: 0 6px;
+    font-size: 13px;
   }
 
   #messageInput {
     padding: 0 7px;
+  }
+
+  .send-button {
+    padding: 0 6px;
+    font-size: 13px;
   }
 
   .setting-view {
@@ -957,24 +984,10 @@ body {
 }
 
 
+/* Image avatars */
 
-
-
-/* ===== Normal stamp border fix ===== */
-.stamp-bubble {
-  border: 3px solid #1f4f82 !important;
-}
-
-
-/* ===== Warning stamp border fix ===== */
-.warning-stamp-card {
-  border: 3px solid #ffffff !important;
-}
-
-
-/* ===== Image avatar / Shiroko reply ===== */
-
-.image-avatar {
+.image-avatar,
+.yuuka-avatar {
   overflow: hidden;
   padding: 0;
   background: #ffffff !important;
@@ -983,9 +996,7 @@ body {
 .avatar-image {
   width: 100%;
   height: 100%;
-
   display: block;
-
   object-fit: cover;
 }
 
@@ -998,31 +1009,11 @@ body {
   grid-column: auto !important;
 }
 
-
-/* ===== System reply stamp border ===== */
-/*
-  シロコ返信など、ユーザー以外のスタンプ返信は白枠にする。
-*/
-
 .system-reply-stamp-bubble {
-  border: 3px solid #ffffff !important;
+  border-color: #ffffff !important;
 }
 
-
-/* ===== Yuuka warning avatar ===== */
-
-.yuuka-avatar {
-  overflow: hidden;
-  padding: 0;
-  background: #ffffff !important;
-}
-
-
-/* ===== Compact consecutive user messages ===== */
-/*
-  同じユーザーの投稿が続く場合、
-  設定に応じて2件目以降のアイコン・称号プレート・ユーザー名を省略する。
-*/
+/* Compact consecutive user messages */
 
 .chat-item.compact .avatar,
 .chat-item.compact .name-line {
@@ -1043,14 +1034,10 @@ body {
     grid-template-columns: 42px minmax(0, 1fr);
     margin-top: -3px;
   }
-
-  .chat-item.compact .message-area {
-    grid-column: 2;
-  }
 }
 
+/* Delete mode */
 
-/* ===== Delete mode ===== */
 .chat-log.delete-mode .chat-item {
   position: relative;
   cursor: pointer;
@@ -1082,164 +1069,13 @@ body {
   outline: 2px solid rgba(255, 84, 100, 0.45);
 }
 
-/* ===== Student sender messages ===== */
-/*
-  先生投稿と同じ .bubble を使い、色だけを切り替える。
-  padding / border-width / font-size は共通化して、吹き出しサイズ差を防ぐ。
-*/
-.chat-item.student-message .bubble {
+/* Student sender messages */
+
+.chat-item.student-message .bubble,
+.chat-item.student-message .stamp-bubble {
   color: #28455f;
   background: #ffffff !important;
   background-color: #ffffff !important;
   background-image: none !important;
   border-color: #ffffff !important;
-}
-
-.chat-item.student-message .stamp-bubble {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-  background-image: none !important;
-  border-color: #ffffff !important;
-}
-
-/* ===== Sender selector layout fix ===== */
-.input-area {
-  align-items: center;
-  grid-auto-flow: column;
-  grid-template-rows: 54px;
-}
-
-.input-area.sender-select-visible {
-  grid-template-columns: 118px minmax(0, 1fr) 52px 132px;
-  grid-template-rows: 54px;
-}
-
-.input-area.sender-select-visible .sender-select,
-.input-area.sender-select-visible #messageInput,
-.input-area.sender-select-visible .face-button,
-.input-area.sender-select-visible .send-button {
-  grid-row: 1;
-}
-
-.input-area.sender-select-visible .sender-select {
-  grid-column: 1;
-  width: 100%;
-}
-
-.input-area.sender-select-visible #messageInput {
-  grid-column: 2;
-}
-
-.input-area.sender-select-visible .face-button {
-  grid-column: 3;
-}
-
-.input-area.sender-select-visible .send-button {
-  grid-column: 4;
-}
-
-@media (max-width: 640px) {
-  .input-area.sender-select-visible {
-    flex: 0 0 84px;
-    grid-template-columns: minmax(0, 1fr) 38px 82px;
-    grid-template-rows: 36px 36px;
-    gap: 4px;
-  }
-
-  .input-area.sender-select-visible .sender-select {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    width: 100%;
-    height: 36px;
-  }
-
-  .input-area.sender-select-visible #messageInput {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  .input-area.sender-select-visible .face-button {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .input-area.sender-select-visible .send-button {
-    grid-column: 3;
-    grid-row: 2;
-  }
-}
-
-/* ===== Sender selector two-row mobile layout override ===== */
-.input-area.sender-select-visible {
-  display: grid;
-}
-
-.input-area.sender-select-visible .sender-select {
-  grid-area: sender;
-}
-
-.input-area.sender-select-visible #messageInput {
-  grid-area: message;
-}
-
-.input-area.sender-select-visible .face-button {
-  grid-area: face;
-}
-
-.input-area.sender-select-visible .send-button {
-  grid-area: send;
-  white-space: nowrap;
-}
-
-@media (min-width: 641px) {
-  .input-area.sender-select-visible {
-    grid-template-columns: 118px minmax(0, 1fr) 52px 132px !important;
-    grid-template-rows: 54px !important;
-    grid-template-areas: "sender message face send" !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .input-area.sender-select-visible {
-    flex: 0 0 84px !important;
-    grid-template-columns: minmax(0, 1fr) 38px 82px !important;
-    grid-template-rows: 36px 36px !important;
-    grid-template-areas:
-      "sender sender sender"
-      "message face send" !important;
-    gap: 4px !important;
-  }
-
-  .input-area.sender-select-visible .sender-select,
-  .input-area.sender-select-visible #messageInput,
-  .input-area.sender-select-visible .face-button,
-  .input-area.sender-select-visible .send-button {
-    width: 100%;
-    min-width: 0;
-    height: 36px;
-    box-sizing: border-box;
-  }
-
-  .input-area.sender-select-visible .send-button {
-    font-size: 13px;
-    padding: 0 6px;
-  }
-}
-
-
-/* Mobile compact tab override */
-@media (max-width: 640px) {
-  .tabs {
-    flex-basis: 38px !important;
-    height: 38px !important;
-    min-height: 38px !important;
-  }
-
-  .tab {
-    height: 38px !important;
-    min-height: 38px !important;
-    padding: 0 !important;
-    font-size: 15px !important;
-    line-height: 1 !important;
-  }
 }
