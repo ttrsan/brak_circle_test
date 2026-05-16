@@ -267,6 +267,7 @@ async function createShareUrl() {
     url.searchParams.set(shareLogParamName, encoded);
     await copyText(url.toString());
     shareUrlStatus.textContent = `共有URLをコピーしました。（${chatHistory.length}件）`;
+    window.alert("コピーしました。");
   } catch (error) {
     console.warn("共有URLの作成に失敗しました。", error);
     shareUrlStatus.textContent = "共有URLの作成に失敗しました。";
@@ -1166,6 +1167,12 @@ chatLog.addEventListener("click", (event) => {
 });
 
 clearChatButton.addEventListener("click", () => {
+  const shouldClear = window.confirm("チャットをすべて削除しますか？");
+
+  if (!shouldClear) {
+    return;
+  }
+
   chatLog.innerHTML = "";
   lastUserMessageSenderName = "";
   chatHistory = [];
