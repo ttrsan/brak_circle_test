@@ -23,6 +23,8 @@ const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
 const faceButton = document.querySelector(".face-button");
 const currentSenderSelect = document.getElementById("currentSenderSelect");
+const circleNameTitle = document.getElementById("circleNameTitle");
+const circleNameInput = document.getElementById("circleNameInput");
 
 const senderNameInput = document.getElementById("senderNameInput");
 const clearChatButton = document.getElementById("clearChatButton");
@@ -49,6 +51,8 @@ const openSiteInfoButton = document.getElementById("openSiteInfoButton");
 const siteInfoModal = document.getElementById("siteInfoModal");
 const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 
+const defaultCircleName = "テストサークル";
+let circleName = defaultCircleName;
 let senderName = "先生";
 let currentSenderId = "sensei";
 
@@ -66,7 +70,7 @@ let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
 let deleteMode = false;
-let ngResponseEnabled = true;
+let ngResponseEnabled = false;
 let storageEnabled = false;
 
 function hiraToKata(text) {
@@ -286,6 +290,10 @@ function createChatItem(senderId = "sensei", savedName = "") {
 }
 
 
+function updateCircleNameDisplay() {
+  circleNameTitle.textContent = circleName;
+}
+
 function saveSettings() {
   if (!storageEnabled) {
     localStorage.removeItem(settingsStorageKey);
@@ -295,6 +303,7 @@ function saveSettings() {
   const settings = {
     version: storageVersion,
     storageEnabled,
+    circleName,
     senderName,
     currentSenderId,
     senderSelectorVisible,
@@ -322,14 +331,17 @@ function loadSettings() {
     }
 
     storageEnabled = true;
+    circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
     senderName = settings.senderName || "先生";
     currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : "sensei";
     senderSelectorVisible = settings.senderSelectorVisible === true;
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
     deleteMode = settings.deleteMode === true;
-    ngResponseEnabled = settings.ngResponseEnabled !== false;
+    ngResponseEnabled = settings.ngResponseEnabled === true;
 
+    circleNameInput.value = circleName;
+    updateCircleNameDisplay();
     senderNameInput.value = senderName;
     currentSenderSelect.value = currentSenderId;
 
@@ -696,6 +708,12 @@ messageInput.addEventListener("keydown", (event) => {
 
   event.preventDefault();
   chatForm.requestSubmit();
+});
+
+circleNameInput.addEventListener("input", () => {
+  circleName = circleNameInput.value;
+  updateCircleNameDisplay();
+  saveSettings();
 });
 
 senderNameInput.addEventListener("input", () => {

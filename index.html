@@ -13,7 +13,7 @@
     <section class="chat-panel">
       <div class="top-circle-info">
         <div class="top-circle-title-row">
-          <div class="top-circle-title">テストサークル</div>
+          <div id="circleNameTitle" class="top-circle-title">テストサークル</div>
           <button id="openSiteInfoButton" class="site-info-button" type="button" aria-label="サイト情報を表示">ⓘ</button>
         </div>
       </div>
@@ -47,6 +47,9 @@
       <div id="settingView" class="view setting-view hidden">
         <div class="setting-card">
           <div class="setting-title">チャット設定</div>
+
+          <label class="setting-label" for="circleNameInput">サークル名称</label>
+          <input id="circleNameInput" class="setting-input" type="text" maxlength="24" value="テストサークル" placeholder="サークル名称を入力" />
 
           <label class="setting-label" for="senderNameInput">送信者名</label>
           <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
@@ -112,12 +115,12 @@
             <div class="setting-label">NGワード応答</div>
 
             <label class="radio-setting">
-              <input type="radio" name="ngResponseMode" value="on" checked>
+              <input type="radio" name="ngResponseMode" value="on">
               <span>ON</span>
             </label>
 
             <label class="radio-setting">
-              <input type="radio" name="ngResponseMode" value="off">
+              <input type="radio" name="ngResponseMode" value="off" checked>
               <span>OFF</span>
             </label>
           </div>
