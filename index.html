@@ -256,6 +256,40 @@
     </div>
   </div>
 
+  <div id="appMessageModal" class="modal hidden">
+    <div class="modal-window confirm-window">
+      <div class="modal-header">
+        <span id="appMessageTitle">通知</span>
+        <button id="closeAppMessageButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body confirm-body">
+        <p id="appMessageText"></p>
+        <div class="confirm-actions single-action">
+          <button id="okAppMessageButton" class="sub-button confirm-ok-button" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="appConfirmModal" class="modal hidden">
+    <div class="modal-window confirm-window">
+      <div class="modal-header">
+        <span id="appConfirmTitle">確認</span>
+        <button id="closeAppConfirmButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body confirm-body">
+        <p id="appConfirmText"></p>
+        <div class="confirm-actions">
+          <button id="cancelAppConfirmButton" class="sub-button confirm-cancel-button" type="button">キャンセル</button>
+          <button id="okAppConfirmButton" class="sub-button confirm-ok-button" type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <script src="sender-profiles.js"></script>
   <script src="word-settings.js"></script>
   <script src="script.js"></script>

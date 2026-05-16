@@ -62,6 +62,20 @@ const openSiteInfoButton = document.getElementById("openSiteInfoButton");
 const siteInfoModal = document.getElementById("siteInfoModal");
 const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 
+const appMessageModal = document.getElementById("appMessageModal");
+const appMessageTitle = document.getElementById("appMessageTitle");
+const appMessageText = document.getElementById("appMessageText");
+const closeAppMessageButton = document.getElementById("closeAppMessageButton");
+const okAppMessageButton = document.getElementById("okAppMessageButton");
+
+const appConfirmModal = document.getElementById("appConfirmModal");
+const appConfirmTitle = document.getElementById("appConfirmTitle");
+const appConfirmText = document.getElementById("appConfirmText");
+const closeAppConfirmButton = document.getElementById("closeAppConfirmButton");
+const cancelAppConfirmButton = document.getElementById("cancelAppConfirmButton");
+const okAppConfirmButton = document.getElementById("okAppConfirmButton");
+let appConfirmOkHandler = null;
+
 const defaultCircleName = "テストサークル";
 let circleName = defaultCircleName;
 let senderName = "先生";
@@ -238,6 +252,52 @@ function getSharedPayloadFromUrl() {
   }
 }
 
+function showAppMessage(title, message) {
+  if (!appMessageModal) {
+    return;
+  }
+
+  appMessageTitle.textContent = title || "通知";
+  appMessageText.textContent = message || "";
+  appMessageModal.classList.remove("hidden");
+}
+
+function closeAppMessage() {
+  if (appMessageModal) {
+    appMessageModal.classList.add("hidden");
+  }
+}
+
+function showAppConfirm(title, message, onOk) {
+  if (!appConfirmModal) {
+    if (typeof onOk === "function") {
+      onOk();
+    }
+    return;
+  }
+
+  appConfirmTitle.textContent = title || "確認";
+  appConfirmText.textContent = message || "";
+  appConfirmOkHandler = typeof onOk === "function" ? onOk : null;
+  appConfirmModal.classList.remove("hidden");
+}
+
+function closeAppConfirm() {
+  if (appConfirmModal) {
+    appConfirmModal.classList.add("hidden");
+  }
+  appConfirmOkHandler = null;
+}
+
+function runAppConfirmOk() {
+  const handler = appConfirmOkHandler;
+  closeAppConfirm();
+
+  if (handler) {
+    handler();
+  }
+}
+
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
@@ -267,7 +327,7 @@ async function createShareUrl() {
     url.searchParams.set(shareLogParamName, encoded);
     await copyText(url.toString());
     shareUrlStatus.textContent = `共有URLをコピーしました。（${chatHistory.length}件）`;
-    window.alert("コピーしました。");
+    showAppMessage("共有URL", "コピーしました。");
   } catch (error) {
     console.warn("共有URLの作成に失敗しました。", error);
     shareUrlStatus.textContent = "共有URLの作成に失敗しました。";
@@ -1167,24 +1227,56 @@ chatLog.addEventListener("click", (event) => {
 });
 
 clearChatButton.addEventListener("click", () => {
-  const shouldClear = window.confirm("チャットをすべて削除しますか？");
+  showAppConfirm("チャットをクリア", "チャットをすべて削除しますか？", () => {
+    chatLog.innerHTML = "";
+    lastUserMessageSenderName = "";
+    chatHistory = [];
+    localStorage.removeItem(chatStorageKey);
+    updateDeleteModeDisplay();
 
-  if (!shouldClear) {
-    return;
-  }
-
-  chatLog.innerHTML = "";
-  lastUserMessageSenderName = "";
-  chatHistory = [];
-  localStorage.removeItem(chatStorageKey);
-  updateDeleteModeDisplay();
-
-  if (shareUrlStatus) {
-    shareUrlStatus.textContent = "";
-  }
+    if (shareUrlStatus) {
+      shareUrlStatus.textContent = "";
+    }
+  });
 });
 
 createShareUrlButton.addEventListener("click", createShareUrl);
+
+if (closeAppMessageButton) {
+  closeAppMessageButton.addEventListener("click", closeAppMessage);
+}
+
+if (okAppMessageButton) {
+  okAppMessageButton.addEventListener("click", closeAppMessage);
+}
+
+if (appMessageModal) {
+  appMessageModal.addEventListener("click", (event) => {
+    if (event.target === appMessageModal) {
+      closeAppMessage();
+    }
+  });
+}
+
+if (closeAppConfirmButton) {
+  closeAppConfirmButton.addEventListener("click", closeAppConfirm);
+}
+
+if (cancelAppConfirmButton) {
+  cancelAppConfirmButton.addEventListener("click", closeAppConfirm);
+}
+
+if (okAppConfirmButton) {
+  okAppConfirmButton.addEventListener("click", runAppConfirmOk);
+}
+
+if (appConfirmModal) {
+  appConfirmModal.addEventListener("click", (event) => {
+    if (event.target === appConfirmModal) {
+      closeAppConfirm();
+    }
+  });
+}
 
 function createStampImagePath(folder, number) {
   const fileName = String(number).padStart(2, "0");

@@ -709,6 +709,10 @@ body {
   gap: 12px;
 }
 
+.confirm-actions.single-action {
+  grid-template-columns: 1fr;
+}
+
 .confirm-actions .sub-button {
   margin-bottom: 0;
 }
