@@ -77,6 +77,7 @@ let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
 let deleteMode = false;
+let editMode = false;
 let ngResponseEnabled = false;
 let storageEnabled = false;
 
@@ -485,6 +486,7 @@ function saveSettings() {
     censorMode,
     compactMode,
     deleteMode,
+    editMode,
     ngResponseEnabled
   };
 
@@ -515,6 +517,7 @@ function loadSettings() {
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
     deleteMode = settings.deleteMode === true;
+    editMode = settings.editMode === true;
     ngResponseEnabled = settings.ngResponseEnabled === true;
 
     circleNameInput.value = circleName;
@@ -565,6 +568,12 @@ function loadSettings() {
     if (deleteRadio) {
       deleteRadio.checked = true;
     }
+
+    const editRadioValue = editMode ? "on" : "off";
+    const editRadio = document.querySelector(`input[name="editMode"][value="${editRadioValue}"]`);
+    if (editRadio) {
+      editRadio.checked = true;
+    }
   } catch (error) {
     console.warn("設定の復元に失敗しました。", error);
   }
@@ -602,6 +611,7 @@ function updateMainSenderSettingsDisplay() {
 
 function updateDeleteModeDisplay() {
   chatLog.classList.toggle("delete-mode", deleteMode);
+  chatLog.classList.toggle("edit-mode", editMode);
 }
 
 function renderChatHistory() {
@@ -609,9 +619,9 @@ function renderChatHistory() {
   chatLog.innerHTML = "";
   lastUserMessageSenderName = "";
 
-  for (const message of chatHistory) {
+  chatHistory.forEach((message, index) => {
     if (message.type === "text") {
-      addMessage(message.text || "", message.senderId || "sensei", message.name || "");
+      addMessage(message.text || "", message.senderId || "sensei", message.name || "", index);
     } else if (message.type === "stamp") {
       addImageStampMessage(message.imagePath || "", message.senderId || "sensei", message.name || "");
     } else if (message.type === "systemWarning") {
@@ -619,7 +629,7 @@ function renderChatHistory() {
     } else if (message.type === "shirokoReply") {
       addShirokoReplyStampMessage(message.senderId || "shiroko");
     }
-  }
+  });
 
   isRestoringChat = false;
   updateDeleteModeDisplay();
@@ -680,7 +690,7 @@ function scrollToBottom() {
   });
 }
 
-function addMessage(text, senderId = currentSenderId, savedName = "") {
+function addMessage(text, senderId = currentSenderId, savedName = "", editIndex = -1) {
   const nameForHistory = getSenderProfile(senderId).useCustomName ? (savedName || senderName) : "";
   const { item, messageArea } = createChatItem(senderId, nameForHistory);
 
@@ -689,6 +699,16 @@ function addMessage(text, senderId = currentSenderId, savedName = "") {
   bubble.innerHTML = applyCensor(text);
 
   messageArea.appendChild(bubble);
+
+  if (editMode && editIndex >= 0) {
+    const editButton = document.createElement("button");
+    editButton.className = "message-edit-button";
+    editButton.type = "button";
+    editButton.textContent = "編集";
+    editButton.dataset.index = String(editIndex);
+    messageArea.appendChild(editButton);
+  }
+
   chatLog.appendChild(item);
 
   scrollToBottom();
@@ -937,7 +957,39 @@ document.querySelectorAll('input[name="deleteMode"]').forEach((radio) => {
   });
 });
 
+document.querySelectorAll('input[name="editMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    editMode = radio.value === "on";
+    renderChatHistory();
+    saveSettings();
+  });
+});
+
 chatLog.addEventListener("click", (event) => {
+  const editButton = event.target.closest(".message-edit-button");
+
+  if (editButton && chatLog.contains(editButton)) {
+    event.stopPropagation();
+
+    const index = Number(editButton.dataset.index);
+    const message = chatHistory[index];
+
+    if (!message || message.type !== "text") {
+      return;
+    }
+
+    const editedText = window.prompt("メッセージを編集", message.text || "");
+
+    if (editedText === null) {
+      return;
+    }
+
+    message.text = editedText;
+    saveChatHistory();
+    renderChatHistory();
+    return;
+  }
+
   if (!deleteMode) {
     return;
   }
