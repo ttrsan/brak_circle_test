@@ -679,10 +679,22 @@ chatForm.addEventListener("submit", (event) => {
 messageInput.addEventListener("input", resizeMessageInput);
 
 messageInput.addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-    event.preventDefault();
-    chatForm.requestSubmit();
+  if (event.key !== "Enter") {
+    return;
   }
+
+  // 日本語入力の変換確定中のEnterでは送信しない
+  if (event.isComposing || event.keyCode === 229) {
+    return;
+  }
+
+  // Shift + Enter は改行として残す
+  if (event.shiftKey) {
+    return;
+  }
+
+  event.preventDefault();
+  chatForm.requestSubmit();
 });
 
 senderNameInput.addEventListener("input", () => {
