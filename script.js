@@ -53,6 +53,7 @@ let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
 let deleteMode = false;
+let ngResponseEnabled = true;
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -216,7 +217,8 @@ function saveSettings() {
     senderName,
     censorMode,
     compactMode,
-    deleteMode
+    deleteMode,
+    ngResponseEnabled
   };
 
   localStorage.setItem(settingsStorageKey, JSON.stringify(settings));
@@ -240,6 +242,7 @@ function loadSettings() {
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
     deleteMode = settings.deleteMode === true;
+    ngResponseEnabled = settings.ngResponseEnabled !== false;
 
     senderNameInput.value = senderName;
 
@@ -252,6 +255,12 @@ function loadSettings() {
     const compactRadio = document.querySelector(`input[name="compactMode"][value="${compactRadioValue}"]`);
     if (compactRadio) {
       compactRadio.checked = true;
+    }
+
+    const ngResponseRadioValue = ngResponseEnabled ? "on" : "off";
+    const ngResponseRadio = document.querySelector(`input[name="ngResponseMode"][value="${ngResponseRadioValue}"]`);
+    if (ngResponseRadio) {
+      ngResponseRadio.checked = true;
     }
 
     const deleteRadioValue = deleteMode ? "on" : "off";
@@ -537,7 +546,7 @@ chatForm.addEventListener("submit", (event) => {
 
   addMessage(text);
 
-  if (hasNgWord) {
+  if (hasNgWord && ngResponseEnabled) {
     addSystemWarningStampMessage();
   }
 
@@ -560,6 +569,13 @@ document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
 document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     compactMode = radio.value === "on";
+    saveSettings();
+  });
+});
+
+document.querySelectorAll('input[name="ngResponseMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    ngResponseEnabled = radio.value === "on";
     saveSettings();
   });
 });
@@ -629,7 +645,7 @@ function createStampList() {
       button.addEventListener("click", () => {
         addImageStampMessage(imagePath);
 
-        if (imagePath === "assets/stamps/01/18.png") {
+        if (imagePath === "assets/stamps/01/18.png" && ngResponseEnabled) {
           addShirokoReplyStampMessage();
         }
 
