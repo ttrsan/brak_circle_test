@@ -34,6 +34,10 @@ const openNgWordModalButton = document.getElementById("openNgWordModalButton");
 const ngWordModal = document.getElementById("ngWordModal");
 const closeNgWordModalButton = document.getElementById("closeNgWordModalButton");
 const ngWordList = document.getElementById("ngWordList");
+const ngWordConfirmModal = document.getElementById("ngWordConfirmModal");
+const closeNgWordConfirmButton = document.getElementById("closeNgWordConfirmButton");
+const cancelNgWordConfirmButton = document.getElementById("cancelNgWordConfirmButton");
+const showNgWordConfirmButton = document.getElementById("showNgWordConfirmButton");
 
 const openAllowWordModalButton = document.getElementById("openAllowWordModalButton");
 const allowWordModal = document.getElementById("allowWordModal");
@@ -663,9 +667,32 @@ stampModal.addEventListener("click", (event) => {
   }
 });
 
-openNgWordModalButton.addEventListener("click", () => {
+function openNgWordListModal() {
   renderWordList(ngWordList, ngWords);
   ngWordModal.classList.remove("hidden");
+}
+
+function closeNgWordConfirmModal() {
+  ngWordConfirmModal.classList.add("hidden");
+}
+
+openNgWordModalButton.addEventListener("click", () => {
+  ngWordConfirmModal.classList.remove("hidden");
+});
+
+closeNgWordConfirmButton.addEventListener("click", closeNgWordConfirmModal);
+
+cancelNgWordConfirmButton.addEventListener("click", closeNgWordConfirmModal);
+
+showNgWordConfirmButton.addEventListener("click", () => {
+  closeNgWordConfirmModal();
+  openNgWordListModal();
+});
+
+ngWordConfirmModal.addEventListener("click", (event) => {
+  if (event.target === ngWordConfirmModal) {
+    closeNgWordConfirmModal();
+  }
 });
 
 closeNgWordModalButton.addEventListener("click", () => {

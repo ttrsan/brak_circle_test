@@ -42,8 +42,6 @@
           <label class="setting-label" for="senderNameInput">送信者名</label>
           <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
 
-          <p class="setting-note">設定内容とチャット履歴は、このブラウザに保存されます。</p>
-
           <div class="setting-group">
             <div class="setting-label">伏字モード</div>
 
@@ -76,7 +74,7 @@
 
 
           <div class="setting-group">
-            <div class="setting-label">投稿削除モード</div>
+            <div class="setting-label">投稿タップで削除</div>
 
             <label class="radio-setting">
               <input type="radio" name="deleteMode" value="off" checked>
@@ -136,6 +134,23 @@
 
       <div class="modal-body">
         <div id="ngWordList" class="word-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ngWordConfirmModal" class="modal hidden">
+    <div class="modal-window confirm-window">
+      <div class="modal-header">
+        <span>確認</span>
+        <button id="closeNgWordConfirmButton" class="modal-close" type="button">×</button>
+      </div>
+
+      <div class="modal-body confirm-body">
+        <p>このページには性的表現を含む内容があります。<br>18歳未満の方は閲覧をご遠慮ください。</p>
+        <div class="confirm-actions">
+          <button id="cancelNgWordConfirmButton" class="sub-button confirm-cancel-button" type="button">キャンセル</button>
+          <button id="showNgWordConfirmButton" class="sub-button confirm-ok-button" type="button">表示する</button>
+        </div>
       </div>
     </div>
   </div>

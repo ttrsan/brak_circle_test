@@ -588,7 +588,8 @@ body {
 
 .site-info-window,
 .ngword-window,
-.allowword-window {
+.allowword-window,
+.confirm-window {
   width: min(720px, calc(100vw - 32px));
 }
 
@@ -635,6 +636,38 @@ body {
 .site-info-credit {
   color: #2b5f92;
   font-weight: 900;
+}
+
+
+.confirm-body {
+  color: #24445f;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.confirm-body p {
+  margin: 4px 0 18px;
+}
+
+.confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.confirm-actions .sub-button {
+  margin-bottom: 0;
+}
+
+.confirm-ok-button {
+  color: #ffffff;
+  background: linear-gradient(#4db4e8, #1e7fbd);
+}
+
+.confirm-cancel-button {
+  color: #315a7f;
+  background: linear-gradient(#ffffff, #e9f3f7);
 }
 
 /* Stamp modal */
