@@ -1100,33 +1100,69 @@ body {
   border-color: #ffffff !important;
 }
 
+/* ===== Sender selector layout fix ===== */
+.input-area {
+  align-items: center;
+  grid-auto-flow: column;
+  grid-template-rows: 54px;
+}
 
-/* ===== Mobile sender row ===== */
-.sender-select-row {
-  display: none;
+.input-area.sender-select-visible {
+  grid-template-columns: 118px minmax(0, 1fr) 52px 132px;
+  grid-template-rows: 54px;
+}
+
+.input-area.sender-select-visible .sender-select,
+.input-area.sender-select-visible #messageInput,
+.input-area.sender-select-visible .face-button,
+.input-area.sender-select-visible .send-button {
+  grid-row: 1;
+}
+
+.input-area.sender-select-visible .sender-select {
+  grid-column: 1;
+  width: 100%;
+}
+
+.input-area.sender-select-visible #messageInput {
+  grid-column: 2;
+}
+
+.input-area.sender-select-visible .face-button {
+  grid-column: 3;
+}
+
+.input-area.sender-select-visible .send-button {
+  grid-column: 4;
 }
 
 @media (max-width: 640px) {
-  .input-area {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .input-area.sender-select-visible {
+    flex: 0 0 84px;
+    grid-template-columns: minmax(0, 1fr) 38px 82px;
+    grid-template-rows: 36px 36px;
+    gap: 4px;
   }
 
-  .sender-select.visible {
-    display: block !important;
+  .input-area.sender-select-visible .sender-select {
+    grid-column: 1 / -1;
+    grid-row: 1;
     width: 100%;
+    height: 36px;
   }
 
-  .input-bottom-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
+  .input-area.sender-select-visible #messageInput {
+    grid-column: 1;
+    grid-row: 2;
   }
 
-  .input-bottom-row #messageInput {
-    flex: 1;
-    min-width: 0;
+  .input-area.sender-select-visible .face-button {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .input-area.sender-select-visible .send-button {
+    grid-column: 3;
+    grid-row: 2;
   }
 }
