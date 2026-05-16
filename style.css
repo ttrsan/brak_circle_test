@@ -785,15 +785,15 @@ body {
   }
 
   .tabs {
-    flex: 0 0 58px;
-    min-height: 58px;
-    height: 58px;
+    flex: 0 0 46px;
+    min-height: 46px;
+    height: 46px;
   }
 
   .tab {
-    height: 58px;
-    min-height: 58px;
-    font-size: 18px;
+    height: 46px;
+    min-height: 46px;
+    font-size: 16px;
   }
 
   .chat-log {
