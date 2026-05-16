@@ -1099,3 +1099,34 @@ body {
   background-image: none !important;
   border-color: #ffffff !important;
 }
+
+
+/* ===== Mobile sender row ===== */
+.sender-select-row {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .input-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sender-select.visible {
+    display: block !important;
+    width: 100%;
+  }
+
+  .input-bottom-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .input-bottom-row #messageInput {
+    flex: 1;
+    min-width: 0;
+  }
+}
