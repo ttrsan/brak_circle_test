@@ -1159,7 +1159,8 @@ body {
 }
 
 /* Edit mode */
-.message-edit-button {
+.message-edit-button,
+.message-insert-button {
   display: inline-grid;
   place-items: center;
   margin-top: 4px;
@@ -1174,9 +1175,19 @@ body {
   cursor: pointer;
 }
 
-.message-edit-button:hover {
+.message-edit-button:hover,
+.message-insert-button:hover {
   background: #ffffff;
   border-color: rgba(31, 79, 130, 0.62);
+}
+
+.message-insert-button {
+  border-color: rgba(42, 150, 180, 0.35);
+  color: #24728a;
+}
+
+.message-insert-button:hover {
+  border-color: rgba(42, 150, 180, 0.68);
 }
 
 .chat-log.edit-mode .chat-item {

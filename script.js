@@ -38,6 +38,7 @@ const stampModal = document.getElementById("stampModal");
 const closeStampButton = document.getElementById("closeStampButton");
 const stampGrid = document.getElementById("stampGrid");
 let editingStampIndex = -1;
+let insertingStampAfterIndex = -1;
 
 const openNgWordModalButton = document.getElementById("openNgWordModalButton");
 const ngWordModal = document.getElementById("ngWordModal");
@@ -699,6 +700,22 @@ function createMessageEditControls(editIndex, messageType = "text") {
   editButton.dataset.action = messageType === "text" ? "editText" : "editStamp";
   controls.appendChild(editButton);
 
+  const insertTextButton = document.createElement("button");
+  insertTextButton.className = "message-insert-button";
+  insertTextButton.type = "button";
+  insertTextButton.textContent = "下にテキスト追加";
+  insertTextButton.dataset.index = String(editIndex);
+  insertTextButton.dataset.action = "insertTextBelow";
+  controls.appendChild(insertTextButton);
+
+  const insertStampButton = document.createElement("button");
+  insertStampButton.className = "message-insert-button";
+  insertStampButton.type = "button";
+  insertStampButton.textContent = "下にスタンプ追加";
+  insertStampButton.dataset.index = String(editIndex);
+  insertStampButton.dataset.action = "insertStampBelow";
+  controls.appendChild(insertStampButton);
+
   const deleteButton = document.createElement("button");
   deleteButton.className = "message-delete-button";
   deleteButton.type = "button";
@@ -988,7 +1005,7 @@ document.querySelectorAll('input[name="editMode"]').forEach((radio) => {
 });
 
 chatLog.addEventListener("click", (event) => {
-  const actionButton = event.target.closest(".message-edit-button, .message-delete-button");
+  const actionButton = event.target.closest(".message-edit-button, .message-insert-button, .message-delete-button");
 
   if (actionButton && chatLog.contains(actionButton)) {
     event.stopPropagation();
@@ -1020,7 +1037,34 @@ chatLog.addEventListener("click", (event) => {
 
     if (action === "editStamp") {
       editingStampIndex = index;
+      insertingStampAfterIndex = -1;
       stampModal.classList.add("stamp-editing");
+      stampModal.classList.remove("hidden");
+      return;
+    }
+
+    if (action === "insertTextBelow") {
+      const insertedText = window.prompt("下に追加するメッセージを入力", "");
+
+      if (insertedText === null) {
+        return;
+      }
+
+      chatHistory.splice(index + 1, 0, {
+        type: "text",
+        senderId: currentSenderId,
+        name: getSenderProfile(currentSenderId).useCustomName ? senderName : "",
+        text: insertedText
+      });
+      saveChatHistory();
+      renderChatHistory();
+      return;
+    }
+
+    if (action === "insertStampBelow") {
+      insertingStampAfterIndex = index;
+      editingStampIndex = -1;
+      stampModal.classList.remove("stamp-editing");
       stampModal.classList.remove("hidden");
       return;
     }
@@ -1091,7 +1135,23 @@ function createStampList() {
           };
 
           editingStampIndex = -1;
+          insertingStampAfterIndex = -1;
           stampModal.classList.remove("stamp-editing");
+          stampModal.classList.add("hidden");
+          saveChatHistory();
+          renderChatHistory();
+          return;
+        }
+
+        if (insertingStampAfterIndex >= 0) {
+          chatHistory.splice(insertingStampAfterIndex + 1, 0, {
+            type: "stamp",
+            senderId: currentSenderId,
+            name: getSenderProfile(currentSenderId).useCustomName ? senderName : "",
+            imagePath
+          });
+
+          insertingStampAfterIndex = -1;
           stampModal.classList.add("hidden");
           saveChatHistory();
           renderChatHistory();
@@ -1126,6 +1186,7 @@ function renderWordList(container, words) {
 
 faceButton.addEventListener("click", () => {
   editingStampIndex = -1;
+  insertingStampAfterIndex = -1;
   stampModal.classList.remove("stamp-editing");
   stampModal.classList.remove("hidden");
 });
