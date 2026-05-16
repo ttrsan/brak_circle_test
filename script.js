@@ -51,6 +51,15 @@ const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 
 let senderName = "先生";
 let currentSenderId = "sensei";
+
+function resizeMessageInput() {
+  if (!messageInput) {
+    return;
+  }
+
+  messageInput.style.height = "auto";
+  messageInput.style.height = `${messageInput.scrollHeight}px`;
+}
 let senderSelectorVisible = false;
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
@@ -663,7 +672,17 @@ chatForm.addEventListener("submit", (event) => {
   }
 
   messageInput.value = "";
+  resizeMessageInput();
   messageInput.focus();
+});
+
+messageInput.addEventListener("input", resizeMessageInput);
+
+messageInput.addEventListener("keydown", (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    event.preventDefault();
+    chatForm.requestSubmit();
+  }
 });
 
 senderNameInput.addEventListener("input", () => {
