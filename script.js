@@ -923,6 +923,7 @@ document.querySelectorAll('input[name="mainSenderMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     mainSenderMode = radio.value === "student" ? "student" : "sensei";
     updateMainSenderSettingsDisplay();
+    renderChatHistory();
     saveSettings();
   });
 });
@@ -931,6 +932,7 @@ mainStudentSelect.addEventListener("change", () => {
   mainStudentId = isKnownSenderId(mainStudentSelect.value) && mainStudentSelect.value !== "sensei" ? mainStudentSelect.value : "yuuka";
   mainStudentSelect.value = mainStudentId;
   updateMainSenderSettingsDisplay();
+  renderChatHistory();
   saveSettings();
 });
 
@@ -963,7 +965,8 @@ document.querySelectorAll('input[name="storageMode"]').forEach((radio) => {
 
 document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
-    censorMode = radio.value;
+    censorMode = radio.value === "mask" ? "mask" : "highlight";
+    renderChatHistory();
     saveSettings();
   });
 });
@@ -971,6 +974,7 @@ document.querySelectorAll('input[name="censorMode"]').forEach((radio) => {
 document.querySelectorAll('input[name="compactMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
     compactMode = radio.value === "on";
+    renderChatHistory();
     saveSettings();
   });
 });
