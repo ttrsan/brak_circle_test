@@ -51,8 +51,32 @@
           <label class="setting-label" for="circleNameInput">サークル名称</label>
           <input id="circleNameInput" class="setting-input" type="text" maxlength="24" value="テストサークル" placeholder="サークル名称を入力" />
 
+          <div class="setting-group">
+            <div class="setting-label">メイン送信者</div>
+
+            <label class="radio-setting">
+              <input type="radio" name="mainSenderMode" value="sensei" checked>
+              <span>先生</span>
+            </label>
+
+            <label class="radio-setting">
+              <input type="radio" name="mainSenderMode" value="student">
+              <span>生徒</span>
+            </label>
+          </div>
+
           <label class="setting-label" for="senderNameInput">送信者名</label>
           <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
+
+          <label class="setting-label" for="mainStudentSelect">メイン生徒</label>
+          <select id="mainStudentSelect" class="setting-input">
+            <option value="yuuka">ユウカ</option>
+            <option value="shiroko">シロコ</option>
+            <option value="hoshino">ホシノ</option>
+            <option value="nonomi">ノノミ</option>
+            <option value="serika">セリカ</option>
+            <option value="ayane">アヤネ</option>
+          </select>
 
           <div class="setting-group">
             <div class="setting-label">ブラウザ保存</div>

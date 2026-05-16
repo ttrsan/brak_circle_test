@@ -27,6 +27,7 @@ const circleNameTitle = document.getElementById("circleNameTitle");
 const circleNameInput = document.getElementById("circleNameInput");
 
 const senderNameInput = document.getElementById("senderNameInput");
+const mainStudentSelect = document.getElementById("mainStudentSelect");
 const clearChatButton = document.getElementById("clearChatButton");
 
 const stampModal = document.getElementById("stampModal");
@@ -54,6 +55,8 @@ const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 const defaultCircleName = "テストサークル";
 let circleName = defaultCircleName;
 let senderName = "先生";
+let mainSenderMode = "sensei";
+let mainStudentId = "yuuka";
 let currentSenderId = "sensei";
 
 function resizeMessageInput() {
@@ -255,15 +258,24 @@ function createAvatar(senderId = "sensei") {
   return avatar;
 }
 
+function getMainSenderId() {
+  if (mainSenderMode === "student" && isKnownSenderId(mainStudentId) && mainStudentId !== "sensei") {
+    return mainStudentId;
+  }
+
+  return "sensei";
+}
+
 function createChatItem(senderId = "sensei", savedName = "") {
   const displayName = getSenderDisplayName(senderId, savedName);
   const senderKey = `${senderId}:${displayName}`;
+  const mainSenderId = getMainSenderId();
 
   const item = document.createElement("article");
   item.className = "chat-item";
   item.classList.add(`sender-${senderId}`);
 
-  if (senderId !== "sensei") {
+  if (senderId !== mainSenderId) {
     item.classList.add("student-message");
   }
 
@@ -305,6 +317,8 @@ function saveSettings() {
     storageEnabled,
     circleName,
     senderName,
+    mainSenderMode,
+    mainStudentId,
     currentSenderId,
     senderSelectorVisible,
     censorMode,
@@ -333,7 +347,9 @@ function loadSettings() {
     storageEnabled = true;
     circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
     senderName = settings.senderName || "先生";
-    currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : "sensei";
+    mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
+    mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
+    currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : getMainSenderId();
     senderSelectorVisible = settings.senderSelectorVisible === true;
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
@@ -343,7 +359,15 @@ function loadSettings() {
     circleNameInput.value = circleName;
     updateCircleNameDisplay();
     senderNameInput.value = senderName;
+    mainStudentSelect.value = mainStudentId;
     currentSenderSelect.value = currentSenderId;
+
+    const mainSenderModeRadio = document.querySelector(`input[name="mainSenderMode"][value="${mainSenderMode}"]`);
+    if (mainSenderModeRadio) {
+      mainSenderModeRadio.checked = true;
+    }
+
+    updateMainSenderSettingsDisplay();
 
     const senderSelectorRadioValue = senderSelectorVisible ? "on" : "off";
     const senderSelectorRadio = document.querySelector(`input[name="senderSelectorMode"][value="${senderSelectorRadioValue}"]`);
@@ -390,8 +414,23 @@ function updateSenderSelectorDisplay() {
   chatForm.classList.toggle("sender-select-visible", senderSelectorVisible);
 
   if (!senderSelectorVisible) {
-    currentSenderId = "sensei";
-    currentSenderSelect.value = "sensei";
+    currentSenderId = getMainSenderId();
+    currentSenderSelect.value = currentSenderId;
+  }
+}
+
+function updateMainSenderSettingsDisplay() {
+  const isSenseiMode = mainSenderMode !== "student";
+
+  senderNameInput.disabled = !isSenseiMode;
+  senderNameInput.classList.toggle("setting-input-disabled", !isSenseiMode);
+
+  mainStudentSelect.disabled = isSenseiMode;
+  mainStudentSelect.classList.toggle("setting-input-disabled", isSenseiMode);
+
+  if (!senderSelectorVisible) {
+    currentSenderId = getMainSenderId();
+    currentSenderSelect.value = currentSenderId;
   }
 }
 
@@ -721,6 +760,21 @@ senderNameInput.addEventListener("input", () => {
   saveSettings();
 });
 
+document.querySelectorAll('input[name="mainSenderMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    mainSenderMode = radio.value === "student" ? "student" : "sensei";
+    updateMainSenderSettingsDisplay();
+    saveSettings();
+  });
+});
+
+mainStudentSelect.addEventListener("change", () => {
+  mainStudentId = isKnownSenderId(mainStudentSelect.value) && mainStudentSelect.value !== "sensei" ? mainStudentSelect.value : "yuuka";
+  mainStudentSelect.value = mainStudentId;
+  updateMainSenderSettingsDisplay();
+  saveSettings();
+});
+
 currentSenderSelect.addEventListener("change", () => {
   currentSenderId = isKnownSenderId(currentSenderSelect.value) ? currentSenderSelect.value : "sensei";
   saveSettings();
@@ -942,6 +996,7 @@ siteInfoModal.addEventListener("click", (event) => {
 loadSettings();
 createStampList();
 restoreChatHistory();
+updateMainSenderSettingsDisplay();
 updateSenderSelectorDisplay();
 updateDeleteModeDisplay();
 showChatView();
