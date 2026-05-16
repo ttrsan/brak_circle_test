@@ -22,6 +22,7 @@ const chatLog = document.getElementById("chatLog");
 const chatForm = document.getElementById("chatForm");
 const messageInput = document.getElementById("messageInput");
 const faceButton = document.querySelector(".face-button");
+const currentSenderSelect = document.getElementById("currentSenderSelect");
 
 const senderNameInput = document.getElementById("senderNameInput");
 const clearChatButton = document.getElementById("clearChatButton");
@@ -49,6 +50,8 @@ const siteInfoModal = document.getElementById("siteInfoModal");
 const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
 
 let senderName = "先生";
+let currentSenderId = "sensei";
+let senderSelectorVisible = false;
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
@@ -167,13 +170,45 @@ function applyCensor(text) {
   return result;
 }
 
-function createNameLine(displayName = senderName) {
+function isKnownSenderId(senderId) {
+  return typeof senderProfiles !== "undefined" && Boolean(senderProfiles[senderId]);
+}
+
+function getSenderProfile(senderId = "sensei") {
+  if (typeof senderProfiles === "undefined") {
+    return {
+      name: "先生",
+      title: "新任の先生",
+      plateClass: "gold",
+      icon: null,
+      avatarText: "S",
+      useCustomName: true
+    };
+  }
+
+  return senderProfiles[senderId] || senderProfiles.sensei;
+}
+
+function getSenderDisplayName(senderId = "sensei", savedName = "") {
+  const profile = getSenderProfile(senderId);
+
+  if (profile.useCustomName) {
+    return savedName || senderName || profile.name || "先生";
+  }
+
+  return profile.name || savedName || "先生";
+}
+
+function createNameLine(senderId = "sensei", savedName = "") {
+  const profile = getSenderProfile(senderId);
+  const displayName = getSenderDisplayName(senderId, savedName);
+
   const nameLine = document.createElement("div");
   nameLine.className = "name-line";
 
   const plate = document.createElement("span");
-  plate.className = "plate gold";
-  plate.textContent = "新任の先生";
+  plate.className = `plate ${profile.plateClass || "gold"}`;
+  plate.textContent = profile.title || "新任の先生";
 
   const name = document.createElement("strong");
   name.textContent = displayName;
@@ -184,30 +219,59 @@ function createNameLine(displayName = senderName) {
   return nameLine;
 }
 
-function createChatItem(displayName = senderName) {
+function createAvatar(senderId = "sensei") {
+  const profile = getSenderProfile(senderId);
+  const avatar = document.createElement("div");
+
+  if (profile.icon) {
+    avatar.className = "avatar image-avatar";
+
+    const avatarImage = document.createElement("img");
+    avatarImage.className = "avatar-image";
+    avatarImage.src = profile.icon;
+    avatarImage.alt = profile.name || "icon";
+
+    avatar.appendChild(avatarImage);
+    return avatar;
+  }
+
+  avatar.className = "avatar";
+  avatar.textContent = profile.avatarText || "S";
+
+  return avatar;
+}
+
+function createChatItem(senderId = "sensei", savedName = "") {
+  const displayName = getSenderDisplayName(senderId, savedName);
+  const senderKey = `${senderId}:${displayName}`;
+
   const item = document.createElement("article");
   item.className = "chat-item";
+  item.classList.add(`sender-${senderId}`);
 
-  if (compactMode && lastUserMessageSenderName === displayName) {
+  if (senderId !== "sensei") {
+    item.classList.add("student-message");
+  }
+
+  if (compactMode && lastUserMessageSenderName === senderKey) {
     item.classList.add("compact");
   }
 
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = "S";
+  const avatar = createAvatar(senderId);
 
   const messageArea = document.createElement("div");
   messageArea.className = "message-area";
-  messageArea.appendChild(createNameLine(displayName));
+  messageArea.appendChild(createNameLine(senderId, savedName));
 
   item.appendChild(avatar);
   item.appendChild(messageArea);
 
-  lastUserMessageSenderName = displayName;
+  lastUserMessageSenderName = senderKey;
 
   return {
     item,
-    messageArea
+    messageArea,
+    displayName
   };
 }
 
@@ -222,6 +286,8 @@ function saveSettings() {
     version: storageVersion,
     storageEnabled,
     senderName,
+    currentSenderId,
+    senderSelectorVisible,
     censorMode,
     compactMode,
     deleteMode,
@@ -247,12 +313,23 @@ function loadSettings() {
 
     storageEnabled = true;
     senderName = settings.senderName || "先生";
+    currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : "sensei";
+    senderSelectorVisible = settings.senderSelectorVisible === true;
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
     deleteMode = settings.deleteMode === true;
     ngResponseEnabled = settings.ngResponseEnabled !== false;
 
     senderNameInput.value = senderName;
+    currentSenderSelect.value = currentSenderId;
+
+    const senderSelectorRadioValue = senderSelectorVisible ? "on" : "off";
+    const senderSelectorRadio = document.querySelector(`input[name="senderSelectorMode"][value="${senderSelectorRadioValue}"]`);
+    if (senderSelectorRadio) {
+      senderSelectorRadio.checked = true;
+    }
+
+    updateSenderSelectorDisplay();
 
     const storageRadio = document.querySelector('input[name="storageMode"][value="on"]');
     if (storageRadio) {
@@ -286,6 +363,16 @@ function loadSettings() {
   }
 }
 
+function updateSenderSelectorDisplay() {
+  currentSenderSelect.classList.toggle("hidden", !senderSelectorVisible);
+  chatForm.classList.toggle("sender-select-visible", senderSelectorVisible);
+
+  if (!senderSelectorVisible) {
+    currentSenderId = "sensei";
+    currentSenderSelect.value = "sensei";
+  }
+}
+
 function updateDeleteModeDisplay() {
   chatLog.classList.toggle("delete-mode", deleteMode);
 }
@@ -297,9 +384,9 @@ function renderChatHistory() {
 
   for (const message of chatHistory) {
     if (message.type === "text") {
-      addMessage(message.text || "", message.name || "先生");
+      addMessage(message.text || "", message.senderId || "sensei", message.name || "");
     } else if (message.type === "stamp") {
-      addImageStampMessage(message.imagePath || "", message.name || "先生");
+      addImageStampMessage(message.imagePath || "", message.senderId || "sensei", message.name || "");
     } else if (message.type === "systemWarning") {
       addSystemWarningStampMessage();
     } else if (message.type === "shirokoReply") {
@@ -366,8 +453,9 @@ function scrollToBottom() {
   });
 }
 
-function addMessage(text, displayName = senderName) {
-  const { item, messageArea } = createChatItem(displayName);
+function addMessage(text, senderId = currentSenderId, savedName = "") {
+  const nameForHistory = getSenderProfile(senderId).useCustomName ? (savedName || senderName) : "";
+  const { item, messageArea } = createChatItem(senderId, nameForHistory);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
@@ -380,13 +468,15 @@ function addMessage(text, displayName = senderName) {
 
   pushChatHistory({
     type: "text",
-    name: displayName,
+    senderId,
+    name: nameForHistory,
     text
   });
 }
 
-function addImageStampMessage(imagePath, displayName = senderName) {
-  const { item, messageArea } = createChatItem(displayName);
+function addImageStampMessage(imagePath, senderId = currentSenderId, savedName = "") {
+  const nameForHistory = getSenderProfile(senderId).useCustomName ? (savedName || senderName) : "";
+  const { item, messageArea } = createChatItem(senderId, nameForHistory);
 
   const bubble = document.createElement("div");
   bubble.className = "bubble stamp-bubble";
@@ -405,7 +495,8 @@ function addImageStampMessage(imagePath, displayName = senderName) {
 
   pushChatHistory({
     type: "stamp",
-    name: displayName,
+    senderId,
+    name: nameForHistory,
     imagePath
   });
 }
@@ -421,7 +512,7 @@ function addSystemWarningStampMessage() {
 
   const avatarImage = document.createElement("img");
   avatarImage.className = "avatar-image";
-  avatarImage.src = "assets/icons/yuuka.png";
+  avatarImage.src = getSenderProfile("yuuka").icon || "assets/icons/seminar/yuuka.png";
   avatarImage.alt = "ユウカ";
 
   avatar.appendChild(avatarImage);
@@ -483,7 +574,7 @@ function addShirokoReplyStampMessage() {
 
   const avatarImage = document.createElement("img");
   avatarImage.className = "avatar-image";
-  avatarImage.src = "assets/icons/shiroko.png";
+  avatarImage.src = getSenderProfile("shiroko").icon || "assets/icons/abydos/shiroko.png";
   avatarImage.alt = "シロコ";
 
   avatar.appendChild(avatarImage);
@@ -578,6 +669,19 @@ chatForm.addEventListener("submit", (event) => {
 senderNameInput.addEventListener("input", () => {
   senderName = senderNameInput.value.trim() || "先生";
   saveSettings();
+});
+
+currentSenderSelect.addEventListener("change", () => {
+  currentSenderId = isKnownSenderId(currentSenderSelect.value) ? currentSenderSelect.value : "sensei";
+  saveSettings();
+});
+
+document.querySelectorAll('input[name="senderSelectorMode"]').forEach((radio) => {
+  radio.addEventListener("change", () => {
+    senderSelectorVisible = radio.value === "on";
+    updateSenderSelectorDisplay();
+    saveSettings();
+  });
 });
 
 document.querySelectorAll('input[name="storageMode"]').forEach((radio) => {
@@ -788,5 +892,6 @@ siteInfoModal.addEventListener("click", (event) => {
 loadSettings();
 createStampList();
 restoreChatHistory();
+updateSenderSelectorDisplay();
 updateDeleteModeDisplay();
 showChatView();

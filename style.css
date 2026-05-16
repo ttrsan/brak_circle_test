@@ -263,8 +263,10 @@ body {
 
 .bubble {
   display: inline-block;
+  box-sizing: border-box;
   max-width: min(100%, 560px);
   padding: 2px 8px;
+  border: 3px solid #1f4f82;
   border-radius: 6px;
   color: #ffffff;
   background:
@@ -273,6 +275,7 @@ body {
       rgba(9, 58, 112, 0.96),
       rgba(23, 69, 116, 0.92)
     );
+  box-shadow: 0 2px 5px rgba(55, 80, 110, 0.14);
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
@@ -425,6 +428,22 @@ body {
   grid-template-columns: minmax(0, 1fr) 52px 132px;
   gap: 10px;
   padding: 0 8px 8px;
+}
+
+.input-area.sender-select-visible {
+  grid-template-columns: 118px minmax(0, 1fr) 52px 132px;
+}
+
+.sender-select {
+  min-width: 0;
+  height: 54px;
+  padding: 0 10px;
+  border: 2px solid #c4cbd5;
+  border-radius: 5px;
+  color: #1e3348;
+  background: rgba(255, 255, 255, 0.96);
+  font-size: 20px;
+  font-weight: 900;
 }
 
 #messageInput {
@@ -755,6 +774,16 @@ body {
     font-size: 20px;
   }
 
+  .input-area.sender-select-visible {
+    grid-template-columns: 88px minmax(0, 1fr) 38px 82px;
+  }
+
+  .sender-select {
+    height: 36px;
+    padding: 0 6px;
+    font-size: 13px;
+  }
+
   .tabs {
     flex: 0 0 58px;
     min-height: 58px;
@@ -1049,4 +1078,24 @@ body {
 .chat-log.delete-mode .chat-item:hover .warning-stamp-card {
   filter: brightness(1.08);
   outline: 2px solid rgba(255, 84, 100, 0.45);
+}
+
+/* ===== Student sender messages ===== */
+/*
+  先生投稿と同じ .bubble を使い、色だけを切り替える。
+  padding / border-width / font-size は共通化して、吹き出しサイズ差を防ぐ。
+*/
+.chat-item.student-message .bubble {
+  color: #28455f;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #ffffff !important;
+}
+
+.chat-item.student-message .stamp-bubble {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border-color: #ffffff !important;
 }
