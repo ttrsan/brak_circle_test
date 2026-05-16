@@ -46,7 +46,7 @@
 
       <div id="settingView" class="view setting-view hidden">
         <div class="setting-card">
-          <div class="setting-title">チャット設定</div>
+          <div class="setting-title">設定</div>
 
           <label class="setting-label" for="circleNameInput">サークル名称</label>
           <input id="circleNameInput" class="setting-input" type="text" maxlength="24" value="テストサークル" placeholder="サークル名称を入力" />
@@ -65,31 +65,21 @@
             </label>
           </div>
 
-          <label class="setting-label" for="senderNameInput">送信者名</label>
-          <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
+          <div id="senderNameSettingRow">
+            <label class="setting-label" for="senderNameInput">送信者名</label>
+            <input id="senderNameInput" class="setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名を入力" />
+          </div>
 
-          <label class="setting-label" for="mainStudentSelect">メイン生徒</label>
-          <select id="mainStudentSelect" class="setting-input">
-            <option value="yuuka">ユウカ</option>
-            <option value="shiroko">シロコ</option>
-            <option value="hoshino">ホシノ</option>
-            <option value="nonomi">ノノミ</option>
-            <option value="serika">セリカ</option>
-            <option value="ayane">アヤネ</option>
-          </select>
-
-          <div class="setting-group">
-            <div class="setting-label">ブラウザ保存</div>
-
-            <label class="radio-setting">
-              <input type="radio" name="storageMode" value="off" checked>
-              <span>OFF</span>
-            </label>
-
-            <label class="radio-setting">
-              <input type="radio" name="storageMode" value="on">
-              <span>ON</span>
-            </label>
+          <div id="mainStudentSettingRow" class="hidden">
+            <label class="setting-label" for="mainStudentSelect">メイン生徒</label>
+            <select id="mainStudentSelect" class="setting-input">
+              <option value="yuuka">ユウカ</option>
+              <option value="shiroko">シロコ</option>
+              <option value="hoshino">ホシノ</option>
+              <option value="nonomi">ノノミ</option>
+              <option value="serika">セリカ</option>
+              <option value="ayane">アヤネ</option>
+            </select>
           </div>
 
           <div class="setting-group">
@@ -119,7 +109,6 @@
               <span>****表示</span>
             </label>
           </div>
-
 
           <div class="setting-group">
             <div class="setting-label">連投表示</div>
@@ -163,12 +152,29 @@
             </label>
           </div>
 
+          <button id="openNgWordModalButton" class="sub-button" type="button">NGワード一覧</button>
+          <button id="openAllowWordModalButton" class="sub-button" type="button">許容ワード一覧</button>
+
+          <div class="setting-section-title">共有</div>
           <button id="createShareUrlButton" class="sub-button" type="button">共有URLをコピー</button>
           <div id="shareUrlStatus" class="setting-note share-url-status" aria-live="polite"></div>
 
-          <button id="openNgWordModalButton" class="sub-button" type="button">NGワード一覧</button>
-          <button id="openAllowWordModalButton" class="sub-button" type="button">許容ワード一覧</button>
+          <div class="setting-section-title">詳細設定</div>
           <button id="clearChatButton" class="sub-button" type="button">チャットをクリア</button>
+
+          <div class="setting-group">
+            <div class="setting-label">ブラウザ保存</div>
+
+            <label class="radio-setting">
+              <input type="radio" name="storageMode" value="off" checked>
+              <span>OFF</span>
+            </label>
+
+            <label class="radio-setting">
+              <input type="radio" name="storageMode" value="on">
+              <span>ON</span>
+            </label>
+          </div>
         </div>
       </div>
     </section>

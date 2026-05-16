@@ -537,6 +537,16 @@ body {
   font-weight: 900;
 }
 
+
+.setting-section-title {
+  margin: 30px 0 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(77, 122, 164, 0.22);
+  color: #164773;
+  font-size: 23px;
+  font-weight: 900;
+}
+
 .setting-label {
   display: block;
   margin-bottom: 8px;
@@ -1140,4 +1150,10 @@ body {
   opacity: 0.55;
   cursor: not-allowed;
   background: rgba(226, 235, 241, 0.9) !important;
+}
+
+/* Main sender rerender support: special reply stamps now follow the same main/student layout as normal messages. */
+.system-warning-item,
+.shiroko-reply-item {
+  margin-left: 0 !important;
 }

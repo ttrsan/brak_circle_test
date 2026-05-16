@@ -27,7 +27,9 @@ const circleNameTitle = document.getElementById("circleNameTitle");
 const circleNameInput = document.getElementById("circleNameInput");
 
 const senderNameInput = document.getElementById("senderNameInput");
+const senderNameSettingRow = document.getElementById("senderNameSettingRow");
 const mainStudentSelect = document.getElementById("mainStudentSelect");
+const mainStudentSettingRow = document.getElementById("mainStudentSettingRow");
 const clearChatButton = document.getElementById("clearChatButton");
 const createShareUrlButton = document.getElementById("createShareUrlButton");
 const shareUrlStatus = document.getElementById("shareUrlStatus");
@@ -369,7 +371,7 @@ function getSenderDisplayName(senderId = "sensei", savedName = "") {
   const profile = getSenderProfile(senderId);
 
   if (profile.useCustomName) {
-    return savedName || senderName || profile.name || "先生";
+    return senderName || savedName || profile.name || "先生";
   }
 
   return profile.name || savedName || "先生";
@@ -581,11 +583,16 @@ function updateSenderSelectorDisplay() {
 function updateMainSenderSettingsDisplay() {
   const isSenseiMode = mainSenderMode !== "student";
 
-  senderNameInput.disabled = !isSenseiMode;
-  senderNameInput.classList.toggle("setting-input-disabled", !isSenseiMode);
+  if (senderNameSettingRow) {
+    senderNameSettingRow.classList.toggle("hidden", !isSenseiMode);
+  }
 
+  if (mainStudentSettingRow) {
+    mainStudentSettingRow.classList.toggle("hidden", isSenseiMode);
+  }
+
+  senderNameInput.disabled = !isSenseiMode;
   mainStudentSelect.disabled = isSenseiMode;
-  mainStudentSelect.classList.toggle("setting-input-disabled", isSenseiMode);
 
   if (!senderSelectorVisible) {
     currentSenderId = getMainSenderId();
@@ -608,9 +615,9 @@ function renderChatHistory() {
     } else if (message.type === "stamp") {
       addImageStampMessage(message.imagePath || "", message.senderId || "sensei", message.name || "");
     } else if (message.type === "systemWarning") {
-      addSystemWarningStampMessage();
+      addSystemWarningStampMessage(message.senderId || "yuuka");
     } else if (message.type === "shirokoReply") {
-      addShirokoReplyStampMessage();
+      addShirokoReplyStampMessage(message.senderId || "shiroko");
     }
   }
 
@@ -721,37 +728,9 @@ function addImageStampMessage(imagePath, senderId = currentSenderId, savedName =
   });
 }
 
-function addSystemWarningStampMessage() {
-  lastUserMessageSenderName = "__system__";
-
-  const item = document.createElement("article");
-  item.className = "chat-item system-warning-item";
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar image-avatar yuuka-avatar";
-
-  const avatarImage = document.createElement("img");
-  avatarImage.className = "avatar-image";
-  avatarImage.src = getSenderProfile("yuuka").icon || "assets/icons/seminar/yuuka.png";
-  avatarImage.alt = "ユウカ";
-
-  avatar.appendChild(avatarImage);
-
-  const messageArea = document.createElement("div");
-  messageArea.className = "message-area";
-
-  const nameLine = document.createElement("div");
-  nameLine.className = "name-line";
-
-  const plate = document.createElement("span");
-  plate.className = "plate blue";
-  plate.textContent = "セミナー";
-
-  const name = document.createElement("strong");
-  name.textContent = "ユウカ";
-
-  nameLine.appendChild(plate);
-  nameLine.appendChild(name);
+function addSystemWarningStampMessage(senderId = "yuuka") {
+  const { item, messageArea } = createChatItem(senderId, "");
+  item.classList.add("system-warning-item");
 
   /*
     NG警告スタンプは bubble / stamp-bubble を使わない。
@@ -766,54 +745,21 @@ function addSystemWarningStampMessage() {
   image.alt = "warning";
 
   warningStampCard.appendChild(image);
-
-  messageArea.appendChild(nameLine);
   messageArea.appendChild(warningStampCard);
-
-  item.appendChild(avatar);
-  item.appendChild(messageArea);
-
   chatLog.appendChild(item);
 
   scrollToBottom();
 
   pushChatHistory({
-    type: "systemWarning"
+    type: "systemWarning",
+    senderId
   });
 }
 
 
-function addShirokoReplyStampMessage() {
-  lastUserMessageSenderName = "__shiroko__";
-
-  const item = document.createElement("article");
-  item.className = "chat-item shiroko-reply-item";
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar image-avatar shiroko-avatar";
-
-  const avatarImage = document.createElement("img");
-  avatarImage.className = "avatar-image";
-  avatarImage.src = getSenderProfile("shiroko").icon || "assets/icons/abydos/shiroko.png";
-  avatarImage.alt = "シロコ";
-
-  avatar.appendChild(avatarImage);
-
-  const messageArea = document.createElement("div");
-  messageArea.className = "message-area";
-
-  const nameLine = document.createElement("div");
-  nameLine.className = "name-line";
-
-  const plate = document.createElement("span");
-  plate.className = "plate blue";
-  plate.textContent = "対策委員会";
-
-  const name = document.createElement("strong");
-  name.textContent = "シロコ";
-
-  nameLine.appendChild(plate);
-  nameLine.appendChild(name);
+function addShirokoReplyStampMessage(senderId = "shiroko") {
+  const { item, messageArea } = createChatItem(senderId, "");
+  item.classList.add("shiroko-reply-item");
 
   const bubble = document.createElement("div");
   bubble.className = "bubble stamp-bubble system-reply-stamp-bubble";
@@ -824,21 +770,17 @@ function addShirokoReplyStampMessage() {
   image.alt = "stamp";
 
   bubble.appendChild(image);
-
-  messageArea.appendChild(nameLine);
   messageArea.appendChild(bubble);
-
-  item.appendChild(avatar);
-  item.appendChild(messageArea);
-
   chatLog.appendChild(item);
 
   scrollToBottom();
 
   pushChatHistory({
-    type: "shirokoReply"
+    type: "shirokoReply",
+    senderId
   });
 }
+
 
 function showChatView() {
   chatTab.classList.add("active");
@@ -916,6 +858,7 @@ circleNameInput.addEventListener("input", () => {
 
 senderNameInput.addEventListener("input", () => {
   senderName = senderNameInput.value.trim() || "先生";
+  renderChatHistory();
   saveSettings();
 });
 
