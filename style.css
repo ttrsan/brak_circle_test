@@ -1182,3 +1182,34 @@ body {
 .chat-log.edit-mode .chat-item {
   position: relative;
 }
+
+/* Edit/delete controls */
+.message-edit-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.message-delete-button {
+  display: inline-grid;
+  place-items: center;
+  padding: 3px 10px;
+  border: 2px solid rgba(255, 84, 100, 0.35);
+  border-radius: 999px;
+  color: #b63848;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 3px rgba(55, 80, 110, 0.12);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.message-delete-button:hover {
+  background: #ffffff;
+  border-color: rgba(255, 84, 100, 0.72);
+}
+
+.stamp-editing .modal-title::after {
+  content: "を選択";
+}

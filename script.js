@@ -37,6 +37,7 @@ const shareUrlStatus = document.getElementById("shareUrlStatus");
 const stampModal = document.getElementById("stampModal");
 const closeStampButton = document.getElementById("closeStampButton");
 const stampGrid = document.getElementById("stampGrid");
+let editingStampIndex = -1;
 
 const openNgWordModalButton = document.getElementById("openNgWordModalButton");
 const ngWordModal = document.getElementById("ngWordModal");
@@ -516,7 +517,7 @@ function loadSettings() {
     senderSelectorVisible = settings.senderSelectorVisible === true;
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
-    deleteMode = settings.deleteMode === true;
+    deleteMode = false;
     editMode = settings.editMode === true;
     ngResponseEnabled = settings.ngResponseEnabled === true;
 
@@ -563,11 +564,6 @@ function loadSettings() {
       ngResponseRadio.checked = true;
     }
 
-    const deleteRadioValue = deleteMode ? "on" : "off";
-    const deleteRadio = document.querySelector(`input[name="deleteMode"][value="${deleteRadioValue}"]`);
-    if (deleteRadio) {
-      deleteRadio.checked = true;
-    }
 
     const editRadioValue = editMode ? "on" : "off";
     const editRadio = document.querySelector(`input[name="editMode"][value="${editRadioValue}"]`);
@@ -623,11 +619,11 @@ function renderChatHistory() {
     if (message.type === "text") {
       addMessage(message.text || "", message.senderId || "sensei", message.name || "", index);
     } else if (message.type === "stamp") {
-      addImageStampMessage(message.imagePath || "", message.senderId || "sensei", message.name || "");
+      addImageStampMessage(message.imagePath || "", message.senderId || "sensei", message.name || "", index);
     } else if (message.type === "systemWarning") {
-      addSystemWarningStampMessage(message.senderId || "yuuka");
+      addSystemWarningStampMessage(message.senderId || "yuuka", index);
     } else if (message.type === "shirokoReply") {
-      addShirokoReplyStampMessage(message.senderId || "shiroko");
+      addShirokoReplyStampMessage(message.senderId || "shiroko", index);
     }
   });
 
@@ -690,6 +686,30 @@ function scrollToBottom() {
   });
 }
 
+
+function createMessageEditControls(editIndex, messageType = "text") {
+  const controls = document.createElement("div");
+  controls.className = "message-edit-controls";
+
+  const editButton = document.createElement("button");
+  editButton.className = "message-edit-button";
+  editButton.type = "button";
+  editButton.textContent = messageType === "text" ? "編集" : "スタンプ変更";
+  editButton.dataset.index = String(editIndex);
+  editButton.dataset.action = messageType === "text" ? "editText" : "editStamp";
+  controls.appendChild(editButton);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.className = "message-delete-button";
+  deleteButton.type = "button";
+  deleteButton.textContent = "削除";
+  deleteButton.dataset.index = String(editIndex);
+  deleteButton.dataset.action = "deleteMessage";
+  controls.appendChild(deleteButton);
+
+  return controls;
+}
+
 function addMessage(text, senderId = currentSenderId, savedName = "", editIndex = -1) {
   const nameForHistory = getSenderProfile(senderId).useCustomName ? (savedName || senderName) : "";
   const { item, messageArea } = createChatItem(senderId, nameForHistory);
@@ -701,12 +721,7 @@ function addMessage(text, senderId = currentSenderId, savedName = "", editIndex 
   messageArea.appendChild(bubble);
 
   if (editMode && editIndex >= 0) {
-    const editButton = document.createElement("button");
-    editButton.className = "message-edit-button";
-    editButton.type = "button";
-    editButton.textContent = "編集";
-    editButton.dataset.index = String(editIndex);
-    messageArea.appendChild(editButton);
+    messageArea.appendChild(createMessageEditControls(editIndex, "text"));
   }
 
   chatLog.appendChild(item);
@@ -721,7 +736,7 @@ function addMessage(text, senderId = currentSenderId, savedName = "", editIndex 
   });
 }
 
-function addImageStampMessage(imagePath, senderId = currentSenderId, savedName = "") {
+function addImageStampMessage(imagePath, senderId = currentSenderId, savedName = "", editIndex = -1) {
   const nameForHistory = getSenderProfile(senderId).useCustomName ? (savedName || senderName) : "";
   const { item, messageArea } = createChatItem(senderId, nameForHistory);
 
@@ -736,6 +751,10 @@ function addImageStampMessage(imagePath, senderId = currentSenderId, savedName =
   bubble.appendChild(image);
   messageArea.appendChild(bubble);
 
+  if (editMode && editIndex >= 0) {
+    messageArea.appendChild(createMessageEditControls(editIndex, "stamp"));
+  }
+
   chatLog.appendChild(item);
 
   scrollToBottom();
@@ -748,7 +767,7 @@ function addImageStampMessage(imagePath, senderId = currentSenderId, savedName =
   });
 }
 
-function addSystemWarningStampMessage(senderId = "yuuka") {
+function addSystemWarningStampMessage(senderId = "yuuka", editIndex = -1) {
   const { item, messageArea } = createChatItem(senderId, "");
   item.classList.add("system-warning-item");
 
@@ -766,6 +785,11 @@ function addSystemWarningStampMessage(senderId = "yuuka") {
 
   warningStampCard.appendChild(image);
   messageArea.appendChild(warningStampCard);
+
+  if (editMode && editIndex >= 0) {
+    messageArea.appendChild(createMessageEditControls(editIndex, "stamp"));
+  }
+
   chatLog.appendChild(item);
 
   scrollToBottom();
@@ -777,7 +801,7 @@ function addSystemWarningStampMessage(senderId = "yuuka") {
 }
 
 
-function addShirokoReplyStampMessage(senderId = "shiroko") {
+function addShirokoReplyStampMessage(senderId = "shiroko", editIndex = -1) {
   const { item, messageArea } = createChatItem(senderId, "");
   item.classList.add("shiroko-reply-item");
 
@@ -791,6 +815,11 @@ function addShirokoReplyStampMessage(senderId = "shiroko") {
 
   bubble.appendChild(image);
   messageArea.appendChild(bubble);
+
+  if (editMode && editIndex >= 0) {
+    messageArea.appendChild(createMessageEditControls(editIndex, "stamp"));
+  }
+
   chatLog.appendChild(item);
 
   scrollToBottom();
@@ -949,13 +978,6 @@ document.querySelectorAll('input[name="ngResponseMode"]').forEach((radio) => {
   });
 });
 
-document.querySelectorAll('input[name="deleteMode"]').forEach((radio) => {
-  radio.addEventListener("change", () => {
-    deleteMode = radio.value === "on";
-    updateDeleteModeDisplay();
-    saveSettings();
-  });
-});
 
 document.querySelectorAll('input[name="editMode"]').forEach((radio) => {
   radio.addEventListener("change", () => {
@@ -966,50 +988,56 @@ document.querySelectorAll('input[name="editMode"]').forEach((radio) => {
 });
 
 chatLog.addEventListener("click", (event) => {
-  const editButton = event.target.closest(".message-edit-button");
+  const actionButton = event.target.closest(".message-edit-button, .message-delete-button");
 
-  if (editButton && chatLog.contains(editButton)) {
+  if (actionButton && chatLog.contains(actionButton)) {
     event.stopPropagation();
 
-    const index = Number(editButton.dataset.index);
+    const index = Number(actionButton.dataset.index);
+    const action = actionButton.dataset.action;
     const message = chatHistory[index];
 
-    if (!message || message.type !== "text") {
+    if (!message) {
       return;
     }
 
-    const editedText = window.prompt("メッセージを編集", message.text || "");
+    if (action === "editText") {
+      if (message.type !== "text") {
+        return;
+      }
 
-    if (editedText === null) {
+      const editedText = window.prompt("メッセージを編集", message.text || "");
+
+      if (editedText === null) {
+        return;
+      }
+
+      message.text = editedText;
+      saveChatHistory();
+      renderChatHistory();
       return;
     }
 
-    message.text = editedText;
-    saveChatHistory();
-    renderChatHistory();
-    return;
+    if (action === "editStamp") {
+      editingStampIndex = index;
+      stampModal.classList.add("stamp-editing");
+      stampModal.classList.remove("hidden");
+      return;
+    }
+
+    if (action === "deleteMessage") {
+      const shouldDelete = window.confirm("このメッセージを削除しますか？");
+
+      if (!shouldDelete) {
+        return;
+      }
+
+      chatHistory.splice(index, 1);
+      saveChatHistory();
+      renderChatHistory();
+      return;
+    }
   }
-
-  if (!deleteMode) {
-    return;
-  }
-
-  const item = event.target.closest(".chat-item");
-
-  if (!item || !chatLog.contains(item)) {
-    return;
-  }
-
-  const items = Array.from(chatLog.querySelectorAll(".chat-item"));
-  const index = items.indexOf(item);
-
-  if (index < 0) {
-    return;
-  }
-
-  chatHistory.splice(index, 1);
-  renderChatHistory();
-  saveChatHistory();
 });
 
 clearChatButton.addEventListener("click", () => {
@@ -1050,6 +1078,26 @@ function createStampList() {
       button.appendChild(image);
 
       button.addEventListener("click", () => {
+        if (editingStampIndex >= 0 && chatHistory[editingStampIndex]) {
+          const message = chatHistory[editingStampIndex];
+          const senderId = message.senderId || currentSenderId;
+          const name = message.name || "";
+
+          chatHistory[editingStampIndex] = {
+            type: "stamp",
+            senderId,
+            name,
+            imagePath
+          };
+
+          editingStampIndex = -1;
+          stampModal.classList.remove("stamp-editing");
+          stampModal.classList.add("hidden");
+          saveChatHistory();
+          renderChatHistory();
+          return;
+        }
+
         addImageStampMessage(imagePath);
 
         if (imagePath === "assets/stamps/01/18.png" && ngResponseEnabled) {
@@ -1077,15 +1125,21 @@ function renderWordList(container, words) {
 }
 
 faceButton.addEventListener("click", () => {
+  editingStampIndex = -1;
+  stampModal.classList.remove("stamp-editing");
   stampModal.classList.remove("hidden");
 });
 
 closeStampButton.addEventListener("click", () => {
+  editingStampIndex = -1;
+  stampModal.classList.remove("stamp-editing");
   stampModal.classList.add("hidden");
 });
 
 stampModal.addEventListener("click", (event) => {
   if (event.target === stampModal) {
+    editingStampIndex = -1;
+    stampModal.classList.remove("stamp-editing");
     stampModal.classList.add("hidden");
   }
 });
