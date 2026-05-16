@@ -566,6 +566,11 @@ body {
   line-height: 1.5;
 }
 
+.share-url-status {
+  min-height: 1.5em;
+  margin-top: -4px;
+}
+
 .setting-group {
   margin-bottom: 22px;
 }

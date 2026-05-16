@@ -29,6 +29,8 @@ const circleNameInput = document.getElementById("circleNameInput");
 const senderNameInput = document.getElementById("senderNameInput");
 const mainStudentSelect = document.getElementById("mainStudentSelect");
 const clearChatButton = document.getElementById("clearChatButton");
+const createShareUrlButton = document.getElementById("createShareUrlButton");
+const shareUrlStatus = document.getElementById("shareUrlStatus");
 
 const stampModal = document.getElementById("stampModal");
 const closeStampButton = document.getElementById("closeStampButton");
@@ -75,6 +77,163 @@ let compactMode = true;
 let deleteMode = false;
 let ngResponseEnabled = false;
 let storageEnabled = false;
+
+const shareLogParamName = "log";
+let isLoadingSharedLog = false;
+
+function encodeBase64UrlFromText(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replaceAll("=", "");
+}
+
+function decodeTextFromBase64Url(base64Url) {
+  const base64 = base64Url
+    .replaceAll("-", "+")
+    .replaceAll("_", "/")
+    .padEnd(Math.ceil(base64Url.length / 4) * 4, "=");
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return new TextDecoder().decode(bytes);
+}
+
+function createSharePayload() {
+  return {
+    v: storageVersion,
+    settings: {
+      circleName,
+      senderName,
+      mainSenderMode,
+      mainStudentId,
+      currentSenderId,
+      senderSelectorVisible,
+      censorMode,
+      compactMode,
+      ngResponseEnabled
+    },
+    messages: chatHistory
+  };
+}
+
+function applySharedSettings(settings = {}) {
+  circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
+  senderName = settings.senderName || "先生";
+  mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
+  mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
+  senderSelectorVisible = settings.senderSelectorVisible === true;
+  censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
+  compactMode = settings.compactMode !== false;
+  ngResponseEnabled = settings.ngResponseEnabled === true;
+  currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : getMainSenderId();
+
+  circleNameInput.value = circleName;
+  senderNameInput.value = senderName;
+  mainStudentSelect.value = mainStudentId;
+  currentSenderSelect.value = currentSenderId;
+  updateCircleNameDisplay();
+
+  const mainSenderModeRadio = document.querySelector(`input[name="mainSenderMode"][value="${mainSenderMode}"]`);
+  if (mainSenderModeRadio) {
+    mainSenderModeRadio.checked = true;
+  }
+
+  const senderSelectorRadioValue = senderSelectorVisible ? "on" : "off";
+  const senderSelectorRadio = document.querySelector(`input[name="senderSelectorMode"][value="${senderSelectorRadioValue}"]`);
+  if (senderSelectorRadio) {
+    senderSelectorRadio.checked = true;
+  }
+
+  const censorRadio = document.querySelector(`input[name="censorMode"][value="${censorMode}"]`);
+  if (censorRadio) {
+    censorRadio.checked = true;
+  }
+
+  const compactRadioValue = compactMode ? "on" : "off";
+  const compactRadio = document.querySelector(`input[name="compactMode"][value="${compactRadioValue}"]`);
+  if (compactRadio) {
+    compactRadio.checked = true;
+  }
+
+  const ngResponseRadioValue = ngResponseEnabled ? "on" : "off";
+  const ngResponseRadio = document.querySelector(`input[name="ngResponseMode"][value="${ngResponseRadioValue}"]`);
+  if (ngResponseRadio) {
+    ngResponseRadio.checked = true;
+  }
+
+  updateMainSenderSettingsDisplay();
+  updateSenderSelectorDisplay();
+}
+
+function getSharedPayloadFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get(shareLogParamName);
+
+  if (!encoded) {
+    return null;
+  }
+
+  try {
+    const jsonText = decodeTextFromBase64Url(encoded);
+    const payload = JSON.parse(jsonText);
+
+    if (!payload || !Array.isArray(payload.messages)) {
+      return null;
+    }
+
+    return payload;
+  } catch (error) {
+    console.warn("共有ログの読み込みに失敗しました。", error);
+    return null;
+  }
+}
+
+async function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
+async function createShareUrl() {
+  if (chatHistory.length === 0) {
+    shareUrlStatus.textContent = "共有できるチャットがありません。";
+    return;
+  }
+
+  try {
+    const encoded = encodeBase64UrlFromText(JSON.stringify(createSharePayload()));
+    const url = new URL(window.location.href);
+    url.searchParams.set(shareLogParamName, encoded);
+    await copyText(url.toString());
+    shareUrlStatus.textContent = `共有URLをコピーしました。（${chatHistory.length}件）`;
+  } catch (error) {
+    console.warn("共有URLの作成に失敗しました。", error);
+    shareUrlStatus.textContent = "共有URLの作成に失敗しました。";
+  }
+}
 
 function hiraToKata(text) {
   return text.replace(/[\u3041-\u3096]/g, (char) => {
@@ -860,7 +1019,13 @@ clearChatButton.addEventListener("click", () => {
   chatHistory = [];
   localStorage.removeItem(chatStorageKey);
   updateDeleteModeDisplay();
+
+  if (shareUrlStatus) {
+    shareUrlStatus.textContent = "";
+  }
 });
+
+createShareUrlButton.addEventListener("click", createShareUrl);
 
 function createStampImagePath(folder, number) {
   const fileName = String(number).padStart(2, "0");
@@ -993,9 +1158,25 @@ siteInfoModal.addEventListener("click", (event) => {
   }
 });
 
+const sharedPayload = getSharedPayloadFromUrl();
+
 loadSettings();
 createStampList();
-restoreChatHistory();
+
+if (sharedPayload) {
+  isLoadingSharedLog = true;
+  applySharedSettings(sharedPayload.settings || {});
+  chatHistory = sharedPayload.messages;
+  renderChatHistory();
+  isLoadingSharedLog = false;
+
+  if (shareUrlStatus) {
+    shareUrlStatus.textContent = "共有URLのチャットを読み込みました。";
+  }
+} else {
+  restoreChatHistory();
+}
+
 updateMainSenderSettingsDisplay();
 updateSenderSelectorDisplay();
 updateDeleteModeDisplay();
