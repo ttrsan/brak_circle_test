@@ -1443,3 +1443,34 @@ body {
     font-size: 13px;
   }
 }
+
+/* Chat capture button */
+.capture-chat-button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 8px;
+  color: #164773;
+  background: linear-gradient(#ffffff, #dceef5);
+  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24);
+  cursor: pointer;
+}
+
+.capture-chat-button:hover {
+  background: linear-gradient(#ffffff, #cce8f3);
+}
+
+.capture-chat-icon {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+

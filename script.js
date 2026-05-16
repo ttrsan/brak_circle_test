@@ -58,6 +58,7 @@ const allowWordModal = document.getElementById("allowWordModal");
 const closeAllowWordModalButton = document.getElementById("closeAllowWordModalButton");
 const allowWordList = document.getElementById("allowWordList");
 
+const captureChatButton = document.getElementById("captureChatButton");
 const openSiteInfoButton = document.getElementById("openSiteInfoButton");
 const siteInfoModal = document.getElementById("siteInfoModal");
 const closeSiteInfoButton = document.getElementById("closeSiteInfoButton");
@@ -313,6 +314,787 @@ async function copyText(text) {
   textarea.select();
   document.execCommand("copy");
   document.body.removeChild(textarea);
+}
+
+
+
+function getCaptureFileName() {
+  const now = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  const stamp = [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate())
+  ].join("") + "_" + [
+    pad(now.getHours()),
+    pad(now.getMinutes()),
+    pad(now.getSeconds())
+  ].join("");
+
+  return `circle-chat_${stamp}.png`;
+}
+
+function waitForImagesLoaded(root) {
+  const images = Array.from(root.querySelectorAll("img"));
+
+  if (!images.length) {
+    return Promise.resolve();
+  }
+
+  const waitTasks = images.map((img) => {
+    if (img.complete && img.naturalWidth > 0) {
+      if (typeof img.decode === "function") {
+        return img.decode().catch(() => {});
+      }
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+      const done = () => resolve();
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+    }).then(() => {
+      if (typeof img.decode === "function") {
+        return img.decode().catch(() => {});
+      }
+    });
+  });
+
+  return Promise.race([
+    Promise.all(waitTasks),
+    new Promise((resolve) => setTimeout(resolve, 1500))
+  ]);
+}
+
+function createCaptureNameLine(senderId = "sensei", savedName = "") {
+  const profile = getSenderProfile(senderId);
+  const displayName = getSenderDisplayName(senderId, savedName);
+
+  const nameLine = document.createElement("div");
+  nameLine.className = "capture-name-line";
+
+  const plate = document.createElement("span");
+  plate.className = `capture-plate ${profile.plateClass || "gold"}`;
+  plate.textContent = profile.title || "新任の先生";
+
+  const name = document.createElement("strong");
+  name.textContent = displayName;
+
+  nameLine.appendChild(plate);
+  nameLine.appendChild(name);
+
+  return nameLine;
+}
+
+function createCaptureAvatar(senderId = "sensei") {
+  const profile = getSenderProfile(senderId);
+  const avatar = document.createElement("div");
+
+  if (profile.icon) {
+    avatar.className = "capture-avatar capture-image-avatar";
+
+    const avatarImage = document.createElement("img");
+    avatarImage.className = "capture-avatar-image";
+    avatarImage.src = profile.icon;
+    avatarImage.alt = profile.name || "icon";
+
+    avatar.appendChild(avatarImage);
+    return avatar;
+  }
+
+  avatar.className = "capture-avatar";
+  avatar.textContent = profile.avatarText || "S";
+
+  return avatar;
+}
+
+function createCaptureChatItem(message, index, lastSenderKeyRef) {
+  const senderId = message.senderId || "sensei";
+  const savedName = message.name || "";
+  const displayName = getSenderDisplayName(senderId, savedName);
+  const senderKey = `${senderId}:${displayName}`;
+  const mainSenderId = getMainSenderId();
+  const isStudentMessage = senderId !== mainSenderId;
+  const isCompact = compactMode && lastSenderKeyRef.value === senderKey;
+
+  const item = document.createElement("article");
+  item.className = "capture-chat-item";
+  item.classList.add(`sender-${senderId}`);
+
+  if (isStudentMessage) {
+    item.classList.add("student-message");
+  }
+
+  if (isCompact) {
+    item.classList.add("compact");
+  }
+
+  const avatar = createCaptureAvatar(senderId);
+
+  const messageArea = document.createElement("div");
+  messageArea.className = "capture-message-area";
+  messageArea.appendChild(createCaptureNameLine(senderId, savedName));
+
+  if (message.type === "text") {
+    const bubble = document.createElement("div");
+    bubble.className = "capture-bubble";
+    bubble.innerHTML = applyCensor(message.text || "");
+    messageArea.appendChild(bubble);
+  } else {
+    const bubble = document.createElement("div");
+    bubble.className = "capture-bubble capture-stamp-bubble";
+
+    const image = document.createElement("img");
+    image.className = "capture-stamp-image";
+    image.alt = "stamp";
+
+    if (message.type === "systemWarning") {
+      image.src = "assets/stamps/01/11.png";
+      item.classList.add("system-warning-item");
+    } else if (message.type === "shirokoReply") {
+      image.src = "assets/stamps/03/26.png";
+      item.classList.add("shiroko-reply-item");
+    } else {
+      image.src = message.imagePath || "";
+    }
+
+    bubble.appendChild(image);
+    messageArea.appendChild(bubble);
+  }
+
+  item.appendChild(avatar);
+  item.appendChild(messageArea);
+
+  lastSenderKeyRef.value = senderKey;
+  return item;
+}
+
+
+function roundRectPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function fillRoundRect(ctx, x, y, width, height, radius, color) {
+  ctx.fillStyle = color;
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.fill();
+}
+
+function strokeRoundRect(ctx, x, y, width, height, radius, color, lineWidth = 1) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  roundRectPath(ctx, x, y, width, height, radius);
+  ctx.stroke();
+}
+
+function drawTextWithLetterSpacing(ctx, text, x, y, letterSpacing = 0) {
+  if (!letterSpacing) {
+    ctx.fillText(text, x, y);
+    return ctx.measureText(text).width;
+  }
+
+  let cursor = x;
+  for (const char of text) {
+    ctx.fillText(char, cursor, y);
+    cursor += ctx.measureText(char).width + letterSpacing;
+  }
+  return cursor - x;
+}
+
+function splitCanvasText(ctx, text, maxWidth) {
+  const lines = [];
+  const paragraphs = String(text || "").split(/\r?\n/);
+
+  paragraphs.forEach((paragraph) => {
+    if (paragraph === "") {
+      lines.push("");
+      return;
+    }
+
+    let line = "";
+    for (const char of paragraph) {
+      const testLine = line + char;
+      if (line && ctx.measureText(testLine).width > maxWidth) {
+        lines.push(line);
+        line = char;
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line);
+  });
+
+  return lines.length ? lines : [""];
+}
+
+function getCensoredPlainText(text) {
+  const protectedRanges = createProtectedRanges(text);
+  let result = "";
+  let index = 0;
+
+  while (index < text.length) {
+    const target = detectNgAt(text, index, protectedRanges);
+
+    if (target) {
+      result += censorMode === "highlight" ? target : "*".repeat(target.length);
+      index += target.length;
+      continue;
+    }
+
+    result += text[index];
+    index += 1;
+  }
+
+  return result;
+}
+
+function createCensoredSegments(text) {
+  const protectedRanges = createProtectedRanges(text);
+  const segments = [];
+  let index = 0;
+
+  while (index < text.length) {
+    const target = detectNgAt(text, index, protectedRanges);
+
+    if (target) {
+      segments.push({
+        text: censorMode === "highlight" ? target : "*".repeat(target.length),
+        ng: censorMode === "highlight"
+      });
+      index += target.length;
+      continue;
+    }
+
+    segments.push({ text: text[index], ng: false });
+    index += 1;
+  }
+
+  return segments;
+}
+
+function wrapSegments(ctx, segments, maxWidth) {
+  const lines = [];
+  let current = [];
+  let currentWidth = 0;
+
+  const pushLine = () => {
+    lines.push(current);
+    current = [];
+    currentWidth = 0;
+  };
+
+  segments.forEach((segment) => {
+    const parts = String(segment.text || "").split(/(\r?\n)/);
+
+    parts.forEach((part) => {
+      if (part === "\n" || part === "\r\n") {
+        pushLine();
+        return;
+      }
+
+      for (const char of part) {
+        const width = ctx.measureText(char).width;
+        if (current.length && currentWidth + width > maxWidth) {
+          pushLine();
+        }
+        current.push({ text: char, ng: segment.ng, width });
+        currentWidth += width;
+      }
+    });
+  });
+
+  if (current.length || lines.length === 0) {
+    pushLine();
+  }
+
+  return lines;
+}
+
+function drawSegmentLines(ctx, lines, x, y, lineHeight, normalColor, ngColor) {
+  lines.forEach((line, lineIndex) => {
+    let cursor = x;
+    line.forEach((part) => {
+      ctx.fillStyle = part.ng ? ngColor : normalColor;
+      ctx.fillText(part.text, cursor, y + lineIndex * lineHeight);
+      cursor += part.width;
+    });
+  });
+}
+
+function loadCanvasImage(src) {
+  return new Promise((resolve) => {
+    if (!src) {
+      resolve(null);
+      return;
+    }
+
+    const candidates = [];
+    try {
+      candidates.push(new URL(src, window.location.href).href);
+    } catch (error) {
+      candidates.push(src);
+    }
+    candidates.push(src);
+
+    let index = 0;
+
+    const tryNext = () => {
+      if (index >= candidates.length) {
+        resolve(null);
+        return;
+      }
+
+      const image = new Image();
+
+      image.onload = () => {
+        if (image.naturalWidth > 0 && image.naturalHeight > 0) {
+          resolve(image);
+        } else {
+          index += 1;
+          tryNext();
+        }
+      };
+
+      image.onerror = () => {
+        index += 1;
+        tryNext();
+      };
+
+      image.src = candidates[index];
+    };
+
+    tryNext();
+  });
+}
+
+function drawImageCover(ctx, image, x, y, width, height) {
+  if (!image) {
+    return;
+  }
+
+  const sourceRatio = image.width / image.height;
+  const targetRatio = width / height;
+  let sx = 0;
+  let sy = 0;
+  let sw = image.width;
+  let sh = image.height;
+
+  if (sourceRatio > targetRatio) {
+    sw = image.height * targetRatio;
+    sx = (image.width - sw) / 2;
+  } else {
+    sh = image.width / targetRatio;
+    sy = (image.height - sh) / 2;
+  }
+
+  ctx.drawImage(image, sx, sy, sw, sh, x, y, width, height);
+}
+
+function drawImageContain(ctx, image, x, y, width, height) {
+  if (!image) {
+    return false;
+  }
+
+  const scale = Math.min(width / image.width, height / image.height);
+  const drawWidth = image.width * scale;
+  const drawHeight = image.height * scale;
+  const drawX = x + (width - drawWidth) / 2;
+  const drawY = y + (height - drawHeight) / 2;
+
+  ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+  return true;
+}
+
+function drawCameraIcon(ctx, x, y, size) {
+  ctx.save();
+  ctx.strokeStyle = "#4a6072";
+  ctx.fillStyle = "#4a6072";
+  ctx.lineWidth = 2;
+  roundRectPath(ctx, x + size * 0.18, y + size * 0.32, size * 0.64, size * 0.44, size * 0.1);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x + size * 0.35, y + size * 0.32);
+  ctx.lineTo(x + size * 0.43, y + size * 0.22);
+  ctx.lineTo(x + size * 0.57, y + size * 0.22);
+  ctx.lineTo(x + size * 0.65, y + size * 0.32);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + size * 0.5, y + size * 0.54, size * 0.13, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawFaceIcon(ctx, x, y, size) {
+  ctx.save();
+  ctx.strokeStyle = "#4a6072";
+  ctx.fillStyle = "#4a6072";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size * 0.36, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + size * 0.38, y + size * 0.43, size * 0.045, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.62, y + size * 0.43, size * 0.045, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x + size * 0.5, y + size * 0.54, size * 0.18, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function resolveMessageStampPath(message) {
+  if (message.type === "stamp") {
+    return message.imagePath || "";
+  }
+  if (message.type === "systemWarning") {
+    return "assets/stamps/01/11.png";
+  }
+  if (message.type === "shirokoReply") {
+    return "assets/stamps/03/26.png";
+  }
+  return "";
+}
+
+function getCanvasCaptureMessages() {
+  return chatHistory.map((message) => {
+    const senderId = message.senderId || (message.type === "shirokoReply" ? "shiroko" : "sensei");
+    const profile = getSenderProfile(senderId);
+    const displayName = profile.useCustomName
+      ? (message.name || senderName || profile.name || "先生")
+      : (profile.name || message.name || "先生");
+
+    return {
+      ...message,
+      senderId,
+      profile,
+      displayName,
+      stampPath: resolveMessageStampPath(message)
+    };
+  });
+}
+
+function makeCanvasCaptureLayout(ctx, messages, width) {
+  const margin = 14;
+  const innerWidth = width - margin * 2;
+  const avatarSize = 42;
+  const gap = 9;
+  const lineHeight = 25;
+  const nameLineHeight = 24;
+  const maxBubbleWidth = Math.min(520, innerWidth - avatarSize - gap - 20);
+  const rows = [];
+  let lastSenderKey = "";
+
+  ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+  messages.forEach((message) => {
+    const senderKey = `${message.senderId}:${message.displayName}`;
+    const compact = compactMode && lastSenderKey === senderKey;
+    const isStamp = message.type === "stamp" || message.type === "systemWarning" || message.type === "shirokoReply";
+    const showMeta = !compact;
+    let bubbleWidth = 0;
+    let bubbleHeight = 0;
+    let lines = [];
+
+    if (isStamp) {
+      bubbleWidth = message.type === "systemWarning" ? 112 : 112;
+      bubbleHeight = message.type === "systemWarning" ? 112 : 112;
+    } else {
+      ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      const segments = createCensoredSegments(message.text || "");
+      lines = wrapSegments(ctx, segments, maxBubbleWidth - 28);
+      const widest = Math.max(40, ...lines.map((line) => line.reduce((sum, part) => sum + part.width, 0)));
+      bubbleWidth = Math.min(maxBubbleWidth, Math.ceil(widest + 22));
+      bubbleHeight = Math.max(38, lines.length * lineHeight + 14);
+    }
+
+    const contentHeight = bubbleHeight + (showMeta ? nameLineHeight : 0);
+    const rowHeight = Math.max(showMeta ? avatarSize : 0, contentHeight) + 13;
+
+    rows.push({
+      message,
+      compact,
+      showMeta,
+      isStamp,
+      lines,
+      bubbleWidth,
+      bubbleHeight,
+      rowHeight,
+      avatarSize,
+      maxBubbleWidth
+    });
+
+    lastSenderKey = senderKey;
+  });
+
+  return { rows, margin, innerWidth, avatarSize, gap, lineHeight, nameLineHeight };
+}
+
+async function captureChatImage() {
+  if (!chatHistory.length) {
+    showAppMessage("スクリーンショット", "保存できるチャットがありません。");
+    return;
+  }
+
+  try {
+    const panel = document.querySelector(".chat-panel");
+    const width = Math.max(360, Math.min(880, Math.ceil(panel ? panel.getBoundingClientRect().width : 390)));
+    const scale = Math.min(2, window.devicePixelRatio || 1);
+    const measureCanvas = document.createElement("canvas");
+    const measureCtx = measureCanvas.getContext("2d");
+    const messages = getCanvasCaptureMessages();
+    const layout = makeCanvasCaptureLayout(measureCtx, messages, width);
+
+    const titleHeight = 68;
+    const tabHeight = 62;
+    const headerHeight = titleHeight + tabHeight;
+    const inputHeight = 76;
+    const chatTopPadding = 16;
+    const chatBottomPadding = 18;
+    const chatHeight = layout.rows.reduce((sum, row) => sum + row.rowHeight, chatTopPadding + chatBottomPadding);
+    const height = headerHeight + chatHeight + inputHeight;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(width * scale);
+    canvas.height = Math.ceil(height * scale);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    const imageEntries = [];
+    messages.forEach((message) => {
+      if (message.profile && message.profile.icon) {
+        imageEntries.push(message.profile.icon);
+      }
+      if (message.stampPath) {
+        imageEntries.push(message.stampPath);
+      }
+    });
+
+    const loadedImages = new Map();
+    await Promise.all([...new Set(imageEntries)].map(async (src) => {
+      loadedImages.set(src, await loadCanvasImage(src));
+    }));
+
+    // 全体背景
+    ctx.fillStyle = "#d6eef7";
+    ctx.fillRect(0, 0, width, height);
+
+    // パネル背景
+    ctx.fillStyle = "#edf8fc";
+    ctx.fillRect(4, 4, width - 8, height - 8);
+    strokeRoundRect(ctx, 2, 2, width - 4, height - 4, 0, "#77d6e8", 4);
+
+    // 上部サークル名エリア
+    ctx.fillStyle = "#e8f7fc";
+    ctx.fillRect(8, 8, width - 16, titleHeight - 8);
+
+    const titleX = 20;
+    const titleY = 16;
+    const titleW = width - 118;
+    const titleH = 42;
+    const titleGrad = ctx.createLinearGradient(titleX, titleY, titleX + titleW, titleY);
+    titleGrad.addColorStop(0, "#214d7c");
+    titleGrad.addColorStop(1, "#2b5f91");
+    fillRoundRect(ctx, titleX, titleY, titleW, titleH, 5, titleGrad);
+    ctx.font = "700 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(circleName || defaultCircleName || "テストサークル", titleX + 12, titleY + titleH / 2);
+
+    const iconSize = 42;
+    const camX = width - 98;
+    const infoX = width - 50;
+    fillRoundRect(ctx, camX, titleY, iconSize, iconSize, 5, "#ffffff");
+    strokeRoundRect(ctx, camX, titleY, iconSize, iconSize, 5, "#d7e7ef", 1.2);
+    drawCameraIcon(ctx, camX + 5, titleY + 5, 32);
+    fillRoundRect(ctx, infoX, titleY, iconSize, iconSize, 5, "#ffffff");
+    strokeRoundRect(ctx, infoX, titleY, iconSize, iconSize, 5, "#d7e7ef", 1.2);
+    ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#315f82";
+    ctx.textAlign = "center";
+    ctx.fillText("ⓘ", infoX + iconSize / 2, titleY + iconSize / 2 + 1);
+    ctx.textAlign = "left";
+
+    // タブ
+    const tabY = titleHeight;
+    ctx.fillStyle = "#f3fbfe";
+    ctx.fillRect(8, tabY, width - 16, tabHeight);
+    const tabW = (width - 16) / 2;
+    ctx.fillStyle = "#f6fcff";
+    ctx.fillRect(8, tabY, tabW, tabHeight);
+    ctx.fillStyle = "#b2e8f2";
+    ctx.fillRect(8 + tabW, tabY, tabW, tabHeight);
+    ctx.font = "700 25px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#0b4b7e";
+    ctx.textAlign = "center";
+    ctx.fillText("チャット", 8 + tabW / 2, tabY + tabHeight / 2 + 1);
+    ctx.fillText("設定", 8 + tabW + tabW / 2, tabY + tabHeight / 2 + 1);
+    ctx.textAlign = "left";
+
+    // チャット欄
+    const chatY = headerHeight;
+    ctx.fillStyle = "#dbeaf1";
+    ctx.fillRect(8, chatY, width - 16, chatHeight);
+
+    let y = chatY + chatTopPadding;
+    layout.rows.forEach((row) => {
+      const message = row.message;
+      const profile = message.profile;
+      const mainSenderId = getMainSenderId();
+      const isStudent = message.senderId !== mainSenderId;
+      const xAvatar = layout.margin + 18;
+      const xArea = layout.margin + 18 + layout.avatarSize + layout.gap + 12;
+      const top = y;
+      let contentY = top;
+
+      if (row.showMeta) {
+        const iconImage = loadedImages.get(profile.icon);
+        if (iconImage) {
+          ctx.save();
+          roundRectPath(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7);
+          ctx.clip();
+          drawImageCover(ctx, iconImage, xAvatar, top, layout.avatarSize, layout.avatarSize);
+          ctx.restore();
+          strokeRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff", 3);
+          strokeRoundRect(ctx, xAvatar - 1, top - 1, layout.avatarSize + 2, layout.avatarSize + 2, 8, "#9cc8d7", 1.5);
+        } else {
+          fillRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#9cc7d7");
+          strokeRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff", 3);
+
+          // 先生アイコンの文字描画は、他のCanvas描画状態の影響を受けないように完全に分離する。
+          ctx.save();
+          ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.fillStyle = "#ffffff";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.lineWidth = 1;
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.fillText(profile.avatarText || "S", xAvatar + layout.avatarSize / 2, top + layout.avatarSize / 2 + 1);
+          ctx.restore();
+        }
+
+        const plateText = profile.title || "新任の先生";
+        ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        const plateWidth = Math.max(126, Math.ceil(ctx.measureText(plateText).width + 22));
+        const plateColor = profile.plateClass === "gold" ? "#e7f5fb" : "#3f85bd";
+        const plateTextColor = profile.plateClass === "gold" ? "#385066" : "#ffffff";
+        fillRoundRect(ctx, xArea, top, plateWidth, 22, 3, plateColor);
+        strokeRoundRect(ctx, xArea, top, plateWidth, 22, 3, "#b8cbd7", 1);
+        ctx.fillStyle = plateTextColor;
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.fillText(plateText, xArea + plateWidth / 2, top + 11);
+        ctx.textAlign = "left";
+
+        ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.fillStyle = "#28547a";
+        ctx.fillText(message.displayName, xArea + plateWidth + 14, top + 11);
+        contentY += layout.nameLineHeight + 2;
+      }
+
+      const bubbleX = xArea;
+      const bubbleY = contentY;
+      const bubbleColor = isStudent ? "#ffffff" : "#245986";
+      const borderColor = isStudent ? "#d7e0e8" : "#1d4f7c";
+      const textColor = isStudent ? "#263f55" : "#ffffff";
+
+      if (row.isStamp) {
+        const stampImage = loadedImages.get(message.stampPath);
+        fillRoundRect(ctx, bubbleX, bubbleY, row.bubbleWidth, row.bubbleHeight, 4, isStudent ? "#ffffff" : "#f7fbff");
+        strokeRoundRect(ctx, bubbleX, bubbleY, row.bubbleWidth, row.bubbleHeight, 4, borderColor, 2);
+
+        if (stampImage) {
+          drawImageContain(ctx, stampImage, bubbleX + 4, bubbleY + 4, row.bubbleWidth - 8, row.bubbleHeight - 8);
+        } else {
+          // 読み込み失敗時も真っ白ではなく、失敗が分かる薄いプレースホルダーにする
+          fillRoundRect(ctx, bubbleX + 4, bubbleY + 4, row.bubbleWidth - 8, row.bubbleHeight - 8, 2, "#eef2f6");
+          ctx.font = "700 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.fillStyle = "#7c8b99";
+          ctx.textAlign = "center";
+          ctx.fillText("画像読込失敗", bubbleX + row.bubbleWidth / 2, bubbleY + row.bubbleHeight / 2);
+          ctx.textAlign = "left";
+        }
+      } else {
+        fillRoundRect(ctx, bubbleX, bubbleY, row.bubbleWidth, row.bubbleHeight, 4, bubbleColor);
+        strokeRoundRect(ctx, bubbleX, bubbleY, row.bubbleWidth, row.bubbleHeight, 4, borderColor, 1.5);
+
+        ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.textBaseline = "alphabetic";
+        drawSegmentLines(ctx, row.lines, bubbleX + 10, bubbleY + 25, 25, textColor, "#ff405f");
+      }
+
+      y += row.rowHeight;
+    });
+
+    // 入力欄
+    const inputY = headerHeight + chatHeight;
+    ctx.fillStyle = "#f8fbfe";
+    ctx.fillRect(8, inputY, width - 16, inputHeight);
+    const senderSelectVisible = senderSelectorVisible;
+    const senderW = senderSelectVisible ? 118 : 0;
+    if (senderSelectVisible) {
+      fillRoundRect(ctx, 16, inputY + 13, senderW, 52, 4, "#ffffff");
+      strokeRoundRect(ctx, 16, inputY + 13, senderW, 52, 4, "#c6d4df", 1.2);
+      ctx.font = "700 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      ctx.fillStyle = "#263f55";
+      ctx.textBaseline = "middle";
+      ctx.fillText(getSenderDisplayName(currentSenderId, senderName), 28, inputY + 39);
+    }
+
+    const textX = senderSelectVisible ? 144 : 16;
+    const textW = width - textX - 216;
+    fillRoundRect(ctx, textX, inputY + 13, textW, 52, 4, "#ffffff");
+    strokeRoundRect(ctx, textX, inputY + 13, textW, 52, 4, "#c6d4df", 1.2);
+    ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#9aa7b2";
+    ctx.textBaseline = "middle";
+    ctx.fillText("内容を入力してください。", textX + 12, inputY + 39);
+
+    fillRoundRect(ctx, width - 196, inputY + 13, 52, 52, 5, "#ffffff");
+    strokeRoundRect(ctx, width - 196, inputY + 13, 52, 52, 5, "#c6d4df", 1.2);
+    drawFaceIcon(ctx, width - 190, inputY + 19, 40);
+
+    fillRoundRect(ctx, width - 134, inputY + 13, 118, 52, 7, "#60c4df");
+    strokeRoundRect(ctx, width - 134, inputY + 13, 118, 52, 7, "#49a9c7", 1.2);
+    ctx.font = "700 25px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.fillStyle = "#124d76";
+    ctx.textAlign = "center";
+    ctx.fillText("送信する", width - 75, inputY + 39);
+    ctx.textAlign = "left";
+
+    const url = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = getCaptureFileName();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showAppMessage("スクリーンショット", "Canvas直接描画で、チャット全体を画像保存しました。");
+  } catch (error) {
+    console.warn("Canvas直接描画での画像保存に失敗しました。", error);
+    showAppMessage("スクリーンショット", "画像保存に失敗しました。画像やスタンプの読み込み後に、もう一度試してください。");
+  } finally {
+    renderChatHistory();
+  }
 }
 
 async function createShareUrl() {
@@ -1241,6 +2023,10 @@ clearChatButton.addEventListener("click", () => {
 });
 
 createShareUrlButton.addEventListener("click", createShareUrl);
+
+if (captureChatButton) {
+  captureChatButton.addEventListener("click", captureChatImage);
+}
 
 if (closeAppMessageButton) {
   closeAppMessageButton.addEventListener("click", closeAppMessage);
