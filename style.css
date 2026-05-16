@@ -1166,3 +1166,60 @@ body {
     grid-row: 2;
   }
 }
+
+/* ===== Sender selector two-row mobile layout override ===== */
+.input-area.sender-select-visible {
+  display: grid;
+}
+
+.input-area.sender-select-visible .sender-select {
+  grid-area: sender;
+}
+
+.input-area.sender-select-visible #messageInput {
+  grid-area: message;
+}
+
+.input-area.sender-select-visible .face-button {
+  grid-area: face;
+}
+
+.input-area.sender-select-visible .send-button {
+  grid-area: send;
+  white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+  .input-area.sender-select-visible {
+    grid-template-columns: 118px minmax(0, 1fr) 52px 132px !important;
+    grid-template-rows: 54px !important;
+    grid-template-areas: "sender message face send" !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .input-area.sender-select-visible {
+    flex: 0 0 84px !important;
+    grid-template-columns: minmax(0, 1fr) 38px 82px !important;
+    grid-template-rows: 36px 36px !important;
+    grid-template-areas:
+      "sender sender sender"
+      "message face send" !important;
+    gap: 4px !important;
+  }
+
+  .input-area.sender-select-visible .sender-select,
+  .input-area.sender-select-visible #messageInput,
+  .input-area.sender-select-visible .face-button,
+  .input-area.sender-select-visible .send-button {
+    width: 100%;
+    min-width: 0;
+    height: 36px;
+    box-sizing: border-box;
+  }
+
+  .input-area.sender-select-visible .send-button {
+    font-size: 13px;
+    padding: 0 6px;
+  }
+}
