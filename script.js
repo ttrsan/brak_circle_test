@@ -94,6 +94,18 @@ let mainSenderMode = "sensei";
 let mainStudentId = "yuuka";
 let currentSenderId = "sensei";
 
+function syncSenderTitleInput() {
+  if (senderTitleInput) {
+    senderTitleInput.value = senderTitle || "新任の先生";
+  }
+}
+
+function refreshEditableSenderSettings() {
+  senderNameInput.value = senderName || "先生";
+  syncSenderTitleInput();
+  mainStudentSelect.value = getMainSenderId();
+}
+
 
 function setRadioChecked(name, value) {
   const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
@@ -203,8 +215,7 @@ function applySharedSettings(settings = {}) {
   currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : getMainSenderId();
 
   circleNameInput.value = circleName;
-  senderNameInput.value = senderName;
-  mainStudentSelect.value = getMainSenderId();
+  refreshEditableSenderSettings();
   currentSenderSelect.value = currentSenderId;
   updateCircleNameDisplay();
 
@@ -384,8 +395,8 @@ function createCaptureNameLine(senderId = "sensei", savedName = "") {
   nameLine.className = "capture-name-line";
 
   const plate = document.createElement("span");
-  plate.className = `capture-plate plate ${profile.plateClass || "gold"}`;
-  applyTitlePlateText(plate, profile.title || "新任の先生");
+  plate.className = `capture-plate ${profile.plateClass || "gold"}`;
+  plate.textContent = profile.title || "新任の先生";
 
   const name = document.createElement("strong");
   name.textContent = displayName;
@@ -795,30 +806,6 @@ function getCanvasCaptureMessages() {
 }
 
 // Canvasキャプチャ用に、各メッセージの行数・吹き出しサイズを事前計算する。
-
-function getCanvasTitleFont(title = "") {
-  const textLength = Array.from(String(title).trim()).length;
-
-  if (textLength >= 11) {
-    return {
-      fontSize: 9,
-      multiline: true
-    };
-  }
-
-  if (textLength >= 8) {
-    return {
-      fontSize: 10,
-      multiline: false
-    };
-  }
-
-  return {
-    fontSize: 11,
-    multiline: false
-  };
-}
-
 function makeCanvasCaptureLayout(ctx, messages, width) {
   const margin = 14;
   const innerWidth = width - margin * 2;
@@ -1067,26 +1054,16 @@ async function captureChatImage() {
         }
 
         const plateText = profile.title || "新任の先生";
-        const plateWidth = 126;
-        const plateHeight = 22;
-        const canvasTitleStyle = getCanvasTitleStyle(plateText);
+        ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        const plateWidth = Math.max(126, Math.ceil(ctx.measureText(plateText).width + 22));
         const plateColor = profile.plateClass === "gold" ? "#e7f5fb" : "#3f85bd";
         const plateTextColor = profile.plateClass === "gold" ? "#385066" : "#ffffff";
-        fillRoundRect(ctx, xArea, top, plateWidth, plateHeight, 3, plateColor);
-        strokeRoundRect(ctx, xArea, top, plateWidth, plateHeight, 3, "#b8cbd7", 1);
-
-        ctx.font = `700 ${canvasTitleStyle.fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+        fillRoundRect(ctx, xArea, top, plateWidth, 22, 3, plateColor);
+        strokeRoundRect(ctx, xArea, top, plateWidth, 22, 3, "#b8cbd7", 1);
         ctx.fillStyle = plateTextColor;
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
-
-        if (canvasTitleStyle.lines.length > 1) {
-          ctx.fillText(canvasTitleStyle.lines[0], xArea + plateWidth / 2, top + 7);
-          ctx.fillText(canvasTitleStyle.lines[1], xArea + plateWidth / 2, top + 16);
-        } else {
-          ctx.fillText(canvasTitleStyle.lines[0], xArea + plateWidth / 2, top + 11);
-        }
-
+        ctx.fillText(plateText, xArea + plateWidth / 2, top + 11);
         ctx.textAlign = "left";
 
         ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -1275,88 +1252,6 @@ function isKnownSenderId(senderId) {
 }
 
 // senderProfiles の情報を取得する。先生だけは設定された称号を反映する。
-
-// 称号プレートは幅固定。
-// 長い称号は少し縮小し、さらに長い場合は2行表示へ寄せる。
-function getTitleLengthClass(title = "") {
-  const textLength = Array.from(String(title).trim()).length;
-
-  if (textLength >= 11) {
-    return "title-long";
-  }
-
-  if (textLength >= 8) {
-    return "title-medium";
-  }
-
-  return "";
-}
-
-
-function getTitleLines(title = "") {
-  const text = String(title || "新任の先生").trim() || "新任の先生";
-  const chars = Array.from(text);
-
-  if (chars.length < 11) {
-    return [text];
-  }
-
-  const splitIndex = Math.ceil(chars.length / 2);
-  return [
-    chars.slice(0, splitIndex).join(""),
-    chars.slice(splitIndex).join("")
-  ];
-}
-
-function applyTitlePlateText(plateElement, title = "") {
-  const text = String(title || "新任の先生").trim() || "新任の先生";
-  const titleClass = getTitleLengthClass(text);
-
-  plateElement.textContent = "";
-  plateElement.classList.remove("title-medium", "title-long");
-
-  if (titleClass) {
-    plateElement.classList.add(titleClass);
-  }
-
-  const lines = getTitleLines(text);
-
-  if (lines.length === 1) {
-    plateElement.textContent = lines[0];
-    return;
-  }
-
-  lines.forEach((line) => {
-    const lineElement = document.createElement("span");
-    lineElement.className = "plate-line";
-    lineElement.textContent = line;
-    plateElement.appendChild(lineElement);
-  });
-}
-
-function getCanvasTitleStyle(title = "") {
-  const textLength = Array.from(String(title || "").trim()).length;
-
-  if (textLength >= 11) {
-    return {
-      fontSize: 9,
-      lines: getTitleLines(title)
-    };
-  }
-
-  if (textLength >= 8) {
-    return {
-      fontSize: 10,
-      lines: [String(title || "新任の先生")]
-    };
-  }
-
-  return {
-    fontSize: 12,
-    lines: [String(title || "新任の先生")]
-  };
-}
-
 function getSenderProfile(senderId = "sensei") {
   const customSenseiTitle = senderTitle || "新任の先生";
 
@@ -1402,7 +1297,7 @@ function createNameLine(senderId = "sensei", savedName = "") {
 
   const plate = document.createElement("span");
   plate.className = `plate ${profile.plateClass || "gold"}`;
-  applyTitlePlateText(plate, profile.title || "新任の先生");
+  plate.textContent = profile.title || "新任の先生";
 
   const name = document.createElement("strong");
   name.textContent = displayName;
@@ -1485,6 +1380,10 @@ function updateCircleNameDisplay() {
 }
 
 function saveSettings() {
+  if (senderTitleInput) {
+    senderTitle = senderTitleInput.value.trim() || "新任の先生";
+  }
+
   if (!storageEnabled) {
     localStorage.removeItem(settingsStorageKey);
     return;
@@ -1540,8 +1439,7 @@ function loadSettings() {
 
     circleNameInput.value = circleName;
     updateCircleNameDisplay();
-    senderNameInput.value = senderName;
-    mainStudentSelect.value = mainStudentId;
+    refreshEditableSenderSettings();
     currentSenderSelect.value = currentSenderId;
 
     const mainSenderModeRadio = document.querySelector(`input[name="mainSenderMode"][value="${mainSenderMode}"]`);
@@ -2387,6 +2285,7 @@ siteInfoModal.addEventListener("click", (event) => {
 const sharedPayload = getSharedPayloadFromUrl();
 
 loadSettings();
+refreshEditableSenderSettings();
 createStampList();
 
 if (sharedPayload) {
