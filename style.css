@@ -1595,3 +1595,105 @@ label[for="circleNameInput"],
   }
 }
 
+
+
+/* Responsive title plate text
+   - Keep the plate width visually stable.
+   - Reduce font size for medium titles.
+   - Allow 2-line wrapping for very long titles.
+*/
+.member-title,
+.sender-title,
+.title-plate-text {
+  width: 88px;
+  max-width: 88px;
+  min-width: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.02;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.member-title.title-medium,
+.sender-title.title-medium,
+.title-plate-text.title-medium {
+  font-size: 10px;
+}
+
+.member-title.title-long,
+.sender-title.title-long,
+.title-plate-text.title-long {
+  font-size: 9px;
+  line-height: 1.0;
+}
+
+
+/* 197: actual title plate behavior
+   The real chat title plate uses .plate.gold / .plate.blue.
+   Keep plate width stable, shrink medium titles, and split long titles into 2 lines.
+*/
+.plate {
+  width: 128px;
+  min-width: 128px;
+  max-width: 128px;
+  height: 28px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  overflow: hidden;
+  line-height: 1.02;
+}
+
+.plate.title-medium {
+  font-size: 10px;
+}
+
+.plate.title-long {
+  font-size: 9px;
+  line-height: 1.0;
+  flex-direction: column;
+  gap: 0;
+}
+
+.plate .plate-line {
+  display: block;
+  max-width: 100%;
+  line-height: 1.0;
+  white-space: nowrap;
+}
+
+/* 197: the sender select made the composer tighter.
+   Give the send button enough room so "送信する" is not clipped. */
+.input-area.sender-select-visible,
+.input-area {
+  grid-template-columns: minmax(96px, 132px) minmax(0, 1fr) 44px 118px;
+}
+
+.send-button {
+  width: 100%;
+  min-width: 0;
+  padding: 0 8px;
+  box-sizing: border-box;
+  font-size: 23px;
+}
+
+@media (max-width: 560px) {
+  .input-area.sender-select-visible,
+  .input-area {
+    grid-template-columns: minmax(80px, 118px) minmax(0, 1fr) 44px 108px;
+    gap: 8px;
+  }
+
+  .send-button {
+    font-size: 21px;
+    padding: 0 6px;
+  }
+}
