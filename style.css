@@ -1502,8 +1502,7 @@ body {
 }
 
 
-
-/* 183: sender select is always visible */
+/* Sender select is always visible */
 .input-area.sender-select-visible,
 .input-area {
   grid-template-columns: minmax(96px, 132px) 1fr 44px 96px;
@@ -1518,7 +1517,7 @@ body {
 }
 
 
-/* 184: 設定タブのメイン送信者selectをチャット側sender-selectへ寄せる */
+/* Main sender select style */
 #mainStudentSelect.ios-setting-select {
   width: 100%;
   min-width: 0;
@@ -1545,7 +1544,7 @@ body {
 }
 
 
-/* 185: 設定タブのメイン送信者selectを横に伸ばしすぎない */
+/* Main sender select width */
 #mainStudentSelect.ios-setting-select {
   width: 150px;
   max-width: 150px;
@@ -1561,13 +1560,13 @@ body {
 }
 
 
-/* 186: 名前・称号・送信者を設定上部に整理 */
+/* Name and title setting inputs */
 #senderTitleInput {
   text-align: left;
 }
 
 
-/* 187: PC時の設定入力欄を右側へ綺麗に揃える */
+/* Setting input alignment */
 #senderNameSettingRow .ios-setting-input,
 #senderTitleSettingRow .ios-setting-input {
   width: 150px;
@@ -1589,7 +1588,7 @@ body {
 }
 
 
-/* 188: 名前・称号をサークル名称と同じ右側入力欄レイアウトへ戻す */
+/* Text setting input layout */
 #senderNameSettingRow .ios-setting-input,
 #senderTitleSettingRow .ios-setting-input {
   width: auto;
@@ -1604,7 +1603,7 @@ body {
 }
 
 
-/* 189: 名前・称号をサークル名称入力欄と同じ右寄せ短幅の見た目へ統一 */
+/* Text setting compact input style */
 #senderNameSettingRow .ios-setting-input,
 #senderTitleSettingRow .ios-setting-input {
   width: 264px;
@@ -1626,7 +1625,7 @@ body {
 }
 
 
-/* 190: サークル名称だけ特別扱い。名前・称号は通常入力欄へ戻してPC/スマホ両対応 */
+/* Text setting balance */
 #senderNameSettingRow .ios-setting-input,
 #senderTitleSettingRow .ios-setting-input {
   width: auto;
@@ -1662,7 +1661,7 @@ body {
 }
 
 
-/* 191: サークル名称・名前・称号を同じ左寄せ入力欄デザインへ統一 */
+/* Text settings unified style */
 #circleNameInput.ios-setting-input,
 #senderNameInput.ios-setting-input,
 #senderTitleInput.ios-setting-input {
@@ -1702,7 +1701,7 @@ label[for="circleNameInput"],
 }
 
 
-/* 192: サークル名称・名前・称号・送信者を同一幅・同一右端へ統一 */
+/* Primary setting controls unified width */
 #circleNameInput.ios-setting-input,
 #senderNameInput.ios-setting-input,
 #senderTitleInput.ios-setting-input,

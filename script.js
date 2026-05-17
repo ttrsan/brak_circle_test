@@ -319,7 +319,6 @@ async function copyText(text) {
 }
 
 
-
 function getCaptureFileName() {
   const now = new Date();
   const pad = (value) => String(value).padStart(2, "0");
