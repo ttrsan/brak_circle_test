@@ -848,21 +848,17 @@ async function captureChatImage() {
 
   try {
     const panel = document.querySelector(".chat-panel");
-    const width = Math.max(360, Math.min(880, Math.ceil(panel ? panel.getBoundingClientRect().width : 390)));
+    const width = 850;
     const scale = Math.min(2, window.devicePixelRatio || 1);
     const measureCanvas = document.createElement("canvas");
     const measureCtx = measureCanvas.getContext("2d");
     const messages = getCanvasCaptureMessages();
     const layout = makeCanvasCaptureLayout(measureCtx, messages, width);
 
-    const titleHeight = 68;
-    const tabHeight = 62;
-    const headerHeight = titleHeight + tabHeight;
-    const inputHeight = 76;
     const chatTopPadding = 16;
     const chatBottomPadding = 18;
     const chatHeight = layout.rows.reduce((sum, row) => sum + row.rowHeight, chatTopPadding + chatBottomPadding);
-    const height = headerHeight + chatHeight + inputHeight;
+    const height = chatHeight;
 
     const canvas = document.createElement("canvas");
     canvas.width = Math.ceil(width * scale);
@@ -890,68 +886,11 @@ async function captureChatImage() {
       loadedImages.set(src, await loadCanvasImage(src));
     }));
 
-    // 全体背景
-    ctx.fillStyle = "#d6eef7";
+    // チャット欄だけを描画する。通常画面のHTML/DOMは変更しない。
+    ctx.fillStyle = "#dbeaf1";
     ctx.fillRect(0, 0, width, height);
 
-    // パネル背景
-    ctx.fillStyle = "#edf8fc";
-    ctx.fillRect(4, 4, width - 8, height - 8);
-    strokeRoundRect(ctx, 2, 2, width - 4, height - 4, 0, "#77d6e8", 4);
-
-    // 上部サークル名エリア
-    ctx.fillStyle = "#e8f7fc";
-    ctx.fillRect(8, 8, width - 16, titleHeight - 8);
-
-    const titleX = 20;
-    const titleY = 16;
-    const titleW = width - 118;
-    const titleH = 42;
-    const titleGrad = ctx.createLinearGradient(titleX, titleY, titleX + titleW, titleY);
-    titleGrad.addColorStop(0, "#214d7c");
-    titleGrad.addColorStop(1, "#2b5f91");
-    fillRoundRect(ctx, titleX, titleY, titleW, titleH, 5, titleGrad);
-    ctx.font = "700 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(circleName || defaultCircleName || "テストサークル", titleX + 12, titleY + titleH / 2);
-
-    const iconSize = 42;
-    const camX = width - 98;
-    const infoX = width - 50;
-    fillRoundRect(ctx, camX, titleY, iconSize, iconSize, 5, "#ffffff");
-    strokeRoundRect(ctx, camX, titleY, iconSize, iconSize, 5, "#d7e7ef", 1.2);
-    drawCameraIcon(ctx, camX + 5, titleY + 5, 32);
-    fillRoundRect(ctx, infoX, titleY, iconSize, iconSize, 5, "#ffffff");
-    strokeRoundRect(ctx, infoX, titleY, iconSize, iconSize, 5, "#d7e7ef", 1.2);
-    ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = "#315f82";
-    ctx.textAlign = "center";
-    ctx.fillText("ⓘ", infoX + iconSize / 2, titleY + iconSize / 2 + 1);
-    ctx.textAlign = "left";
-
-    // タブ
-    const tabY = titleHeight;
-    ctx.fillStyle = "#f3fbfe";
-    ctx.fillRect(8, tabY, width - 16, tabHeight);
-    const tabW = (width - 16) / 2;
-    ctx.fillStyle = "#f6fcff";
-    ctx.fillRect(8, tabY, tabW, tabHeight);
-    ctx.fillStyle = "#b2e8f2";
-    ctx.fillRect(8 + tabW, tabY, tabW, tabHeight);
-    ctx.font = "700 25px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = "#0b4b7e";
-    ctx.textAlign = "center";
-    ctx.fillText("チャット", 8 + tabW / 2, tabY + tabHeight / 2 + 1);
-    ctx.fillText("設定", 8 + tabW + tabW / 2, tabY + tabHeight / 2 + 1);
-    ctx.textAlign = "left";
-
-    // チャット欄
-    const chatY = headerHeight;
-    ctx.fillStyle = "#dbeaf1";
-    ctx.fillRect(8, chatY, width - 16, chatHeight);
-
-    let y = chatY + chatTopPadding;
+    let y = chatTopPadding;
     layout.rows.forEach((row) => {
       const message = row.message;
       const profile = message.profile;
@@ -965,18 +904,22 @@ async function captureChatImage() {
       if (row.showMeta) {
         const iconImage = loadedImages.get(profile.icon);
         if (iconImage) {
+          // 透過PNGの背景が透けないよう、先に白い下地を敷く。
+          fillRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff");
+
           ctx.save();
           roundRectPath(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7);
           ctx.clip();
           drawImageCover(ctx, iconImage, xAvatar, top, layout.avatarSize, layout.avatarSize);
           ctx.restore();
+
+          // アイコン枠線も白で統一する。
           strokeRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff", 3);
-          strokeRoundRect(ctx, xAvatar - 1, top - 1, layout.avatarSize + 2, layout.avatarSize + 2, 8, "#9cc8d7", 1.5);
+          strokeRoundRect(ctx, xAvatar - 1, top - 1, layout.avatarSize + 2, layout.avatarSize + 2, 8, "#ffffff", 1.5);
         } else {
           fillRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#9cc7d7");
           strokeRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff", 3);
 
-          // 先生アイコンの文字描画は、他のCanvas描画状態の影響を受けないように完全に分離する。
           ctx.save();
           ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
           ctx.fillStyle = "#ffffff";
@@ -1024,11 +967,11 @@ async function captureChatImage() {
         if (stampImage) {
           drawImageContain(ctx, stampImage, bubbleX + 4, bubbleY + 4, row.bubbleWidth - 8, row.bubbleHeight - 8);
         } else {
-          // 読み込み失敗時も真っ白ではなく、失敗が分かる薄いプレースホルダーにする
           fillRoundRect(ctx, bubbleX + 4, bubbleY + 4, row.bubbleWidth - 8, row.bubbleHeight - 8, 2, "#eef2f6");
           ctx.font = "700 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
           ctx.fillStyle = "#7c8b99";
           ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
           ctx.fillText("画像読込失敗", bubbleX + row.bubbleWidth / 2, bubbleY + row.bubbleHeight / 2);
           ctx.textAlign = "left";
         }
@@ -1044,42 +987,6 @@ async function captureChatImage() {
       y += row.rowHeight;
     });
 
-    // 入力欄
-    const inputY = headerHeight + chatHeight;
-    ctx.fillStyle = "#f8fbfe";
-    ctx.fillRect(8, inputY, width - 16, inputHeight);
-    const senderSelectVisible = senderSelectorVisible;
-    const senderW = senderSelectVisible ? 118 : 0;
-    if (senderSelectVisible) {
-      fillRoundRect(ctx, 16, inputY + 13, senderW, 52, 4, "#ffffff");
-      strokeRoundRect(ctx, 16, inputY + 13, senderW, 52, 4, "#c6d4df", 1.2);
-      ctx.font = "700 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-      ctx.fillStyle = "#263f55";
-      ctx.textBaseline = "middle";
-      ctx.fillText(getSenderDisplayName(currentSenderId, senderName), 28, inputY + 39);
-    }
-
-    const textX = senderSelectVisible ? 144 : 16;
-    const textW = width - textX - 216;
-    fillRoundRect(ctx, textX, inputY + 13, textW, 52, 4, "#ffffff");
-    strokeRoundRect(ctx, textX, inputY + 13, textW, 52, 4, "#c6d4df", 1.2);
-    ctx.font = "16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = "#9aa7b2";
-    ctx.textBaseline = "middle";
-    ctx.fillText("内容を入力してください。", textX + 12, inputY + 39);
-
-    fillRoundRect(ctx, width - 196, inputY + 13, 52, 52, 5, "#ffffff");
-    strokeRoundRect(ctx, width - 196, inputY + 13, 52, 52, 5, "#c6d4df", 1.2);
-    drawFaceIcon(ctx, width - 190, inputY + 19, 40);
-
-    fillRoundRect(ctx, width - 134, inputY + 13, 118, 52, 7, "#60c4df");
-    strokeRoundRect(ctx, width - 134, inputY + 13, 118, 52, 7, "#49a9c7", 1.2);
-    ctx.font = "700 25px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = "#124d76";
-    ctx.textAlign = "center";
-    ctx.fillText("送信する", width - 75, inputY + 39);
-    ctx.textAlign = "left";
-
     const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
@@ -1088,9 +995,8 @@ async function captureChatImage() {
     link.click();
     document.body.removeChild(link);
 
-    showAppMessage("スクリーンショット", "Canvas直接描画で、チャット全体を画像保存しました。");
   } catch (error) {
-    console.warn("Canvas直接描画での画像保存に失敗しました。", error);
+    console.warn("チャット部分のみの画像保存に失敗しました。", error);
     showAppMessage("スクリーンショット", "画像保存に失敗しました。画像やスタンプの読み込み後に、もう一度試してください。");
   } finally {
     renderChatHistory();

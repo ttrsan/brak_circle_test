@@ -1474,3 +1474,30 @@ body {
 }
 
 
+/* Capture / info buttons: normalize mobile browser default button rendering */
+.capture-chat-button,
+.site-info-button {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.capture-chat-icon {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+

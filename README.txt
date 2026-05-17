@@ -145,3 +145,12 @@ assets/stamps/03/01.png ～ 32.png
 
 
 165: Canvasの先生Sアイコン文字描画をctx.save/restoreで完全分離し、textBaseline等の状態残りによる位置ブレを防止。
+
+
+167: 通常画面を壊さないよう、captureChatImage関数のみ差し替え。保存画像はチャットログ部分のみ。html2canvas CDNを削除。
+
+
+168: キャプチャ保存完了ダイアログを非表示化。Canvas保存時の生徒アイコンに白背景と白枠を追加。
+
+
+170: スマホSafari向けにスクショボタンと情報ボタンのサイズ、padding、appearance、flex-basisを明示的に統一。
