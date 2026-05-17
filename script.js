@@ -28,6 +28,8 @@ const circleNameInput = document.getElementById("circleNameInput");
 
 const senderNameInput = document.getElementById("senderNameInput");
 const senderNameSettingRow = document.getElementById("senderNameSettingRow");
+const senderTitleInput = document.getElementById("senderTitleInput");
+const senderTitleSettingRow = document.getElementById("senderTitleSettingRow");
 const mainStudentSelect = document.getElementById("mainStudentSelect");
 const mainStudentSettingRow = document.getElementById("mainStudentSettingRow");
 const clearChatButton = document.getElementById("clearChatButton");
@@ -80,6 +82,7 @@ let appConfirmOkHandler = null;
 const defaultCircleName = "テストサークル";
 let circleName = defaultCircleName;
 let senderName = "先生";
+let senderTitle = "新任の先生";
 let mainSenderMode = "sensei";
 let mainStudentId = "yuuka";
 let currentSenderId = "sensei";
@@ -165,6 +168,7 @@ function createSharePayload() {
     settings: {
       circleName,
       senderName,
+      senderTitle,
       mainSenderMode,
       mainStudentId,
       currentSenderId,
@@ -180,6 +184,7 @@ function createSharePayload() {
 function applySharedSettings(settings = {}) {
   circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
   senderName = settings.senderName || "先生";
+  senderTitle = settings.senderTitle || "新任の先生";
   mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
   mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
   senderSelectorVisible = true;
@@ -1225,10 +1230,12 @@ function isKnownSenderId(senderId) {
 }
 
 function getSenderProfile(senderId = "sensei") {
+  const customSenseiTitle = senderTitle || "新任の先生";
+
   if (typeof senderProfiles === "undefined") {
     return {
       name: "先生",
-      title: "新任の先生",
+      title: customSenseiTitle,
       plateClass: "gold",
       icon: null,
       avatarText: "S",
@@ -1236,7 +1243,16 @@ function getSenderProfile(senderId = "sensei") {
     };
   }
 
-  return senderProfiles[senderId] || senderProfiles.sensei;
+  const profile = senderProfiles[senderId] || senderProfiles.sensei;
+
+  if (senderId === "sensei") {
+    return {
+      ...profile,
+      title: customSenseiTitle
+    };
+  }
+
+  return profile;
 }
 
 function getSenderDisplayName(senderId = "sensei", savedName = "") {
@@ -1350,6 +1366,7 @@ function saveSettings() {
     storageEnabled,
     circleName,
     senderName,
+    senderTitle,
     mainSenderMode,
     mainStudentId,
     currentSenderId,
@@ -1381,6 +1398,7 @@ function loadSettings() {
     storageEnabled = true;
     circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
     senderName = settings.senderName || "先生";
+    senderTitle = settings.senderTitle || "新任の先生";
     mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
     mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
     currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : getMainSenderId();
@@ -1459,11 +1477,18 @@ function updateMainSenderSettingsDisplay() {
     senderNameSettingRow.classList.remove("hidden");
   }
 
+  if (senderTitleSettingRow) {
+    senderTitleSettingRow.classList.remove("hidden");
+  }
+
   if (mainStudentSettingRow) {
     mainStudentSettingRow.classList.remove("hidden");
   }
 
   senderNameInput.disabled = false;
+  if (senderTitleInput) {
+    senderTitleInput.disabled = false;
+  }
   mainStudentSelect.disabled = false;
   mainStudentSelect.value = getMainSenderId();
 }
@@ -1789,6 +1814,14 @@ senderNameInput.addEventListener("input", () => {
   renderChatHistory();
   saveSettings();
 });
+
+if (senderTitleInput) {
+  senderTitleInput.addEventListener("input", () => {
+    senderTitle = senderTitleInput.value.trim() || "新任の先生";
+    renderChatHistory();
+    saveSettings();
+  });
+}
 
 mainStudentSelect.addEventListener("change", () => {
   const selectedMainSenderId = isKnownSenderId(mainStudentSelect.value) ? mainStudentSelect.value : "sensei";
