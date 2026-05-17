@@ -1,3 +1,18 @@
+/*
+  style.css
+  ---------
+  画面全体、チャット欄、設定画面、モーダル、キャプチャボタンなどの見た目をまとめています。
+
+  大まかな構成:
+  1. Base / Layout
+  2. Header / Tabs
+  3. Chat log / Messages
+  4. Input area
+  5. Modals
+  6. Settings
+  7. Capture / sender setting overrides
+*/
+
 * {
   box-sizing: border-box;
 }
@@ -67,7 +82,7 @@ body {
   box-shadow: 0 5px 15px rgba(28, 72, 116, 0.25);
 }
 
-/* Title */
+/* Header: circle title and top buttons */
 
 .top-circle-info {
   flex: 0 0 auto;
@@ -129,11 +144,10 @@ body {
     sans-serif;
   font-size: 24px;
   font-weight: 900;
-  line-height: 1;
   cursor: pointer;
 }
 
-/* Tabs */
+/* Navigation tabs */
 
 .tabs {
   flex: 0 0 62px;
@@ -162,7 +176,7 @@ body {
   background: #f7fdff;
 }
 
-/* Views */
+/* View switching */
 
 .view {
   flex: 1;
@@ -209,6 +223,7 @@ body {
   margin-top: auto;
 }
 
+/* One message row. Avatar and message area are placed side-by-side. */
 .chat-item {
   flex: 0 0 auto;
   display: grid;
@@ -271,6 +286,7 @@ body {
   font-weight: 800;
 }
 
+/* Standard text bubble. Sender color is adjusted by sender classes. */
 .bubble {
   display: inline-block;
   box-sizing: border-box;
@@ -299,6 +315,7 @@ body {
   font-weight: 900;
 }
 
+/* Stamp bubbles use a fixed image-friendly box instead of normal text padding. */
 .stamp-bubble {
   width: 112px;
   height: 112px;
@@ -428,8 +445,9 @@ body {
   }
 }
 
-/* Input */
+/* Message input area */
 
+/* Bottom composer. The sender select is intentionally always visible in the current spec. */
 .input-area {
   order: 1;
   flex: 0 0 62px;
@@ -1064,6 +1082,7 @@ body {
   display: none !important;
 }
 
+/* Compact mode hides repeated sender metadata for consecutive messages. */
 .chat-item.compact {
   grid-template-columns: 78px minmax(0, 1fr);
   margin-top: -4px;
@@ -1533,6 +1552,7 @@ body {
   background-repeat: no-repeat;
 }
 
+/* Primary text/select controls: same width and right edge for visual alignment. */
 #circleNameInput.ios-setting-input,
 #senderNameInput.ios-setting-input,
 #senderTitleInput.ios-setting-input {

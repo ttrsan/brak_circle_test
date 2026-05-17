@@ -1,3 +1,10 @@
+/*
+  script.js
+  ---------
+  チャット投稿、設定保存、スタンプ選択、NGワード判定、共有URL、Canvasキャプチャを扱います。
+  画面表示は基本的に chatHistory と senderProfiles を元に再描画します。
+*/
+
 const stampBasePath = "assets/stamps";
 
 const stampCategories = [
@@ -162,6 +169,7 @@ function decodeTextFromBase64Url(base64Url) {
   return new TextDecoder().decode(bytes);
 }
 
+// 共有URL・ローカル保存向けに、設定とチャット履歴を1つのオブジェクトへまとめる。
 function createSharePayload() {
   return {
     v: storageVersion,
@@ -181,6 +189,7 @@ function createSharePayload() {
   };
 }
 
+// 共有URLから読み込んだ設定を現在のUI状態へ反映する。
 function applySharedSettings(settings = {}) {
   circleName = Object.prototype.hasOwnProperty.call(settings, "circleName") ? String(settings.circleName) : defaultCircleName;
   senderName = settings.senderName || "先生";
@@ -785,6 +794,7 @@ function getCanvasCaptureMessages() {
   });
 }
 
+// Canvasキャプチャ用に、各メッセージの行数・吹き出しサイズを事前計算する。
 function makeCanvasCaptureLayout(ctx, messages, width) {
   const margin = 14;
   const innerWidth = width - margin * 2;
@@ -892,6 +902,7 @@ function openCaptureImageInTab(openedWindow, canvas) {
   openedWindow.document.close();
 }
 
+// チャット画像をCanvasへ直接描画し、事前に開いた別タブへ表示する。
 async function captureChatImage() {
   if (!chatHistory.length) {
     showAppMessage("スクリーンショット", "保存できるチャットがありません。");
@@ -1197,6 +1208,7 @@ function containsNgWord(text) {
   return false;
 }
 
+// NGワードを現在の伏字モードに応じて赤文字化またはマスクする。
 function applyCensor(text) {
   const protectedRanges = createProtectedRanges(text);
 
@@ -1228,6 +1240,7 @@ function isKnownSenderId(senderId) {
   return typeof senderProfiles !== "undefined" && Boolean(senderProfiles[senderId]);
 }
 
+// senderProfiles の情報を取得する。先生だけは設定された称号を反映する。
 function getSenderProfile(senderId = "sensei") {
   const customSenseiTitle = senderTitle || "新任の先生";
 
@@ -1314,6 +1327,7 @@ function getMainSenderId() {
   return "sensei";
 }
 
+// 1件分のチャットDOMを作成する。メイン送信者かどうかで吹き出し色を分ける。
 function createChatItem(senderId = "sensei", savedName = "") {
   const displayName = getSenderDisplayName(senderId, savedName);
   const senderKey = `${senderId}:${displayName}`;
@@ -1497,6 +1511,7 @@ function updateDeleteModeDisplay() {
   chatLog.classList.toggle("edit-mode", editMode);
 }
 
+// chatHistory を元に、チャット欄を再構築する。
 function renderChatHistory() {
   isRestoringChat = true;
   chatLog.innerHTML = "";

@@ -11,6 +11,7 @@
 
   <main class="layout">
     <section class="chat-panel">
+      <!-- Header: circle name, capture button, site information -->
       <div class="top-circle-info">
         <div class="top-circle-title-row">
           <div id="circleNameTitle" class="top-circle-title">テストサークル</div>
@@ -25,11 +26,13 @@
         </div>
       </div>
 
+      <!-- Main tabs -->
       <div class="tabs">
         <button id="chatTab" class="tab active" type="button">チャット</button>
         <button id="settingTab" class="tab" type="button">設定</button>
       </div>
 
+      <!-- Chat view -->
       <div id="chatView" class="view chat-view">
         <div id="chatLog" class="chat-log"></div>
 
@@ -51,6 +54,7 @@
         </form>
       </div>
 
+      <!-- Settings view -->
       <div id="settingView" class="view setting-view hidden">
         <div class="setting-card ios-settings-card">
           <div class="setting-title">設定</div>
