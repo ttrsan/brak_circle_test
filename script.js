@@ -93,9 +93,7 @@ function setRadioChecked(name, value) {
 }
 
 function syncSettingToggles() {
-  if (senderSelectorToggle) {
-    senderSelectorToggle.checked = senderSelectorVisible;
-  }
+  senderSelectorVisible = true;
   if (ngResponseToggle) {
     ngResponseToggle.checked = ngResponseEnabled;
   }
@@ -106,7 +104,6 @@ function syncSettingToggles() {
     storageModeToggle.checked = storageEnabled;
   }
 
-  setRadioChecked("senderSelectorMode", senderSelectorVisible ? "on" : "off");
   setRadioChecked("ngResponseMode", ngResponseEnabled ? "on" : "off");
   setRadioChecked("editMode", editMode ? "on" : "off");
   setRadioChecked("storageMode", storageEnabled ? "on" : "off");
@@ -121,7 +118,7 @@ function resizeMessageInput() {
 
   messageInput.scrollTop = messageInput.scrollHeight;
 }
-let senderSelectorVisible = false;
+let senderSelectorVisible = true;
 let censorMode = "highlight";
 let lastUserMessageSenderName = "";
 let compactMode = true;
@@ -185,7 +182,7 @@ function applySharedSettings(settings = {}) {
   senderName = settings.senderName || "先生";
   mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
   mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
-  senderSelectorVisible = settings.senderSelectorVisible === true;
+  senderSelectorVisible = true;
   censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
   compactMode = settings.compactMode !== false;
   ngResponseEnabled = settings.ngResponseEnabled === true;
@@ -193,7 +190,7 @@ function applySharedSettings(settings = {}) {
 
   circleNameInput.value = circleName;
   senderNameInput.value = senderName;
-  mainStudentSelect.value = mainStudentId;
+  mainStudentSelect.value = getMainSenderId();
   currentSenderSelect.value = currentSenderId;
   updateCircleNameDisplay();
 
@@ -1387,7 +1384,7 @@ function loadSettings() {
     mainSenderMode = settings.mainSenderMode === "student" ? "student" : "sensei";
     mainStudentId = isKnownSenderId(settings.mainStudentId) && settings.mainStudentId !== "sensei" ? settings.mainStudentId : "yuuka";
     currentSenderId = isKnownSenderId(settings.currentSenderId) ? settings.currentSenderId : getMainSenderId();
-    senderSelectorVisible = settings.senderSelectorVisible === true;
+    senderSelectorVisible = true;
     censorMode = settings.censorMode === "mask" ? "mask" : "highlight";
     compactMode = settings.compactMode !== false;
     deleteMode = false;
@@ -1451,33 +1448,24 @@ function loadSettings() {
 }
 
 function updateSenderSelectorDisplay() {
-  currentSenderSelect.classList.toggle("hidden", !senderSelectorVisible);
-  chatForm.classList.toggle("sender-select-visible", senderSelectorVisible);
-
-  if (!senderSelectorVisible) {
-    currentSenderId = getMainSenderId();
-    currentSenderSelect.value = currentSenderId;
-  }
+  senderSelectorVisible = true;
+  currentSenderSelect.classList.remove("hidden");
+  chatForm.classList.add("sender-select-visible");
+  currentSenderSelect.value = isKnownSenderId(currentSenderId) ? currentSenderId : getMainSenderId();
 }
 
 function updateMainSenderSettingsDisplay() {
-  const isSenseiMode = mainSenderMode !== "student";
-
   if (senderNameSettingRow) {
-    senderNameSettingRow.classList.toggle("hidden", !isSenseiMode);
+    senderNameSettingRow.classList.remove("hidden");
   }
 
   if (mainStudentSettingRow) {
-    mainStudentSettingRow.classList.toggle("hidden", isSenseiMode);
+    mainStudentSettingRow.classList.remove("hidden");
   }
 
-  senderNameInput.disabled = !isSenseiMode;
-  mainStudentSelect.disabled = isSenseiMode;
-
-  if (!senderSelectorVisible) {
-    currentSenderId = getMainSenderId();
-    currentSenderSelect.value = currentSenderId;
-  }
+  senderNameInput.disabled = false;
+  mainStudentSelect.disabled = false;
+  mainStudentSelect.value = getMainSenderId();
 }
 
 function updateDeleteModeDisplay() {
@@ -1802,18 +1790,17 @@ senderNameInput.addEventListener("input", () => {
   saveSettings();
 });
 
-document.querySelectorAll('input[name="mainSenderMode"]').forEach((radio) => {
-  radio.addEventListener("change", () => {
-    mainSenderMode = radio.value === "student" ? "student" : "sensei";
-    updateMainSenderSettingsDisplay();
-    renderChatHistory();
-    saveSettings();
-  });
-});
-
 mainStudentSelect.addEventListener("change", () => {
-  mainStudentId = isKnownSenderId(mainStudentSelect.value) && mainStudentSelect.value !== "sensei" ? mainStudentSelect.value : "yuuka";
-  mainStudentSelect.value = mainStudentId;
+  const selectedMainSenderId = isKnownSenderId(mainStudentSelect.value) ? mainStudentSelect.value : "sensei";
+
+  if (selectedMainSenderId === "sensei") {
+    mainSenderMode = "sensei";
+  } else {
+    mainSenderMode = "student";
+    mainStudentId = selectedMainSenderId;
+  }
+
+  mainStudentSelect.value = getMainSenderId();
   updateMainSenderSettingsDisplay();
   renderChatHistory();
   saveSettings();

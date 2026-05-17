@@ -1501,3 +1501,18 @@ body {
   display: block;
 }
 
+
+
+/* 183: sender select is always visible */
+.input-area.sender-select-visible,
+.input-area {
+  grid-template-columns: minmax(96px, 132px) 1fr 44px 96px;
+}
+
+.sender-select {
+  display: block;
+}
+
+.sender-select.hidden {
+  display: block !important;
+}

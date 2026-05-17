@@ -34,7 +34,7 @@
         <div id="chatLog" class="chat-log"></div>
 
         <form id="chatForm" class="input-area">
-          <select id="currentSenderSelect" class="sender-select hidden" aria-label="送信者を選択">
+          <select id="currentSenderSelect" class="sender-select" aria-label="送信者を選択">
             <option value="sensei">先生</option>
             <option value="yuuka">ユウカ</option>
             <option value="shiroko">シロコ</option>
@@ -61,28 +61,10 @@
               <input id="circleNameInput" class="ios-setting-input" type="text" maxlength="24" value="テストサークル" placeholder="サークル名称" />
             </label>
 
-            <div class="ios-setting-row">
+            <label id="mainStudentSettingRow" class="ios-setting-row" for="mainStudentSelect">
               <span class="ios-setting-label">メイン送信者</span>
-              <div class="ios-segmented" role="radiogroup" aria-label="メイン送信者">
-                <label>
-                  <input type="radio" name="mainSenderMode" value="sensei" checked>
-                  <span>先生</span>
-                </label>
-                <label>
-                  <input type="radio" name="mainSenderMode" value="student">
-                  <span>生徒</span>
-                </label>
-              </div>
-            </div>
-
-            <label id="senderNameSettingRow" class="ios-setting-row" for="senderNameInput">
-              <span class="ios-setting-label">送信者名</span>
-              <input id="senderNameInput" class="ios-setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名" />
-            </label>
-
-            <label id="mainStudentSettingRow" class="ios-setting-row hidden" for="mainStudentSelect">
-              <span class="ios-setting-label">メイン生徒</span>
               <select id="mainStudentSelect" class="ios-setting-select">
+                <option value="sensei">先生</option>
                 <option value="yuuka">ユウカ</option>
                 <option value="shiroko">シロコ</option>
                 <option value="hoshino">ホシノ</option>
@@ -92,13 +74,10 @@
               </select>
             </label>
 
-            <div class="ios-setting-row">
-              <span class="ios-setting-label">送信者切替</span>
-              <label class="ios-switch">
-                <input type="checkbox" id="senderSelectorToggle">
-                <span></span>
-              </label>
-            </div>
+            <label id="senderNameSettingRow" class="ios-setting-row" for="senderNameInput">
+              <span class="ios-setting-label">送信者名</span>
+              <input id="senderNameInput" class="ios-setting-input" type="text" maxlength="12" value="先生" placeholder="送信者名" />
+            </label>
 
             <div class="ios-setting-row">
               <span class="ios-setting-label">伏字モード</span>
