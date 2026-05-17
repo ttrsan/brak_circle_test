@@ -104,9 +104,19 @@ body {
 .site-info-button {
   width: 44px;
   height: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  padding: 0;
+  margin: 0;
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
+  flex: 0 0 44px;
+  box-sizing: border-box;
+  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
   border: none;
   border-radius: 8px;
   color: #164773;
@@ -1448,38 +1458,6 @@ body {
 .capture-chat-button {
   width: 44px;
   height: 44px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border: none;
-  border-radius: 8px;
-  color: #164773;
-  background: linear-gradient(#ffffff, #dceef5);
-  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24);
-  cursor: pointer;
-}
-
-.capture-chat-button:hover {
-  background: linear-gradient(#ffffff, #cce8f3);
-}
-
-.capture-chat-icon {
-  width: 27px;
-  height: 27px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-
-/* Capture / info buttons: normalize mobile browser default button rendering */
-.capture-chat-button,
-.site-info-button {
-  box-sizing: border-box;
-  width: 44px;
-  height: 44px;
   min-width: 44px;
   max-width: 44px;
   min-height: 44px;
@@ -1489,40 +1467,52 @@ body {
   display: grid;
   place-items: center;
   flex: 0 0 44px;
+  border: none;
+  border-radius: 8px;
+  color: #164773;
+  background: linear-gradient(#ffffff, #dceef5);
+  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24);
   line-height: 1;
   -webkit-appearance: none;
   appearance: none;
+  cursor: pointer;
+}
+
+.capture-chat-button:hover {
+  background: linear-gradient(#ffffff, #cce8f3);
 }
 
 .capture-chat-icon {
-  box-sizing: border-box;
   width: 24px;
   height: 24px;
   display: block;
+  box-sizing: border-box;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-
-/* Sender select is always visible */
+/* Current sender and primary setting controls */
 .input-area.sender-select-visible,
 .input-area {
   grid-template-columns: minmax(96px, 132px) 1fr 44px 96px;
 }
 
-.sender-select {
-  display: block;
-}
-
+.sender-select,
 .sender-select.hidden {
   display: block !important;
 }
 
-
-/* Main sender select style */
 #mainStudentSelect.ios-setting-select {
-  width: 100%;
-  min-width: 0;
+  width: 300px;
+  max-width: 300px;
   height: 40px;
+  flex: 0 0 300px;
+  margin-left: auto;
   padding: 0 36px 0 12px;
+  box-sizing: border-box;
   border-radius: 12px;
   border: 1px solid rgba(118, 161, 191, 0.34);
   background-color: #ffffff;
@@ -1543,182 +1533,23 @@ body {
   background-repeat: no-repeat;
 }
 
-
-/* Main sender select width */
-#mainStudentSelect.ios-setting-select {
-  width: 150px;
-  max-width: 150px;
-  flex: 0 0 150px;
-}
-
-#mainStudentSettingRow {
-  gap: 14px;
-}
-
-#mainStudentSettingRow .ios-setting-label {
-  flex: 1 1 auto;
-}
-
-
-/* Name and title setting inputs */
-#senderTitleInput {
-  text-align: left;
-}
-
-
-/* Setting input alignment */
-#senderNameSettingRow .ios-setting-input,
-#senderTitleSettingRow .ios-setting-input {
-  width: 150px;
-  max-width: 150px;
-  flex: 0 0 150px;
-  text-align: left;
-}
-
-#senderNameSettingRow,
-#senderTitleSettingRow,
-#mainStudentSettingRow {
-  gap: 14px;
-}
-
-#senderNameSettingRow .ios-setting-label,
-#senderTitleSettingRow .ios-setting-label,
-#mainStudentSettingRow .ios-setting-label {
-  flex: 1 1 auto;
-}
-
-
-/* Text setting input layout */
-#senderNameSettingRow .ios-setting-input,
-#senderTitleSettingRow .ios-setting-input {
-  width: auto;
-  max-width: none;
-  flex: 1 1 auto;
-  text-align: left;
-}
-
-#senderNameSettingRow .ios-setting-label,
-#senderTitleSettingRow .ios-setting-label {
-  flex: 0 0 auto;
-}
-
-
-/* Text setting compact input style */
-#senderNameSettingRow .ios-setting-input,
-#senderTitleSettingRow .ios-setting-input {
-  width: 264px;
-  max-width: 264px;
-  flex: 0 0 264px;
-  margin-left: auto;
-  text-align: right;
-  padding: 0 14px;
-  border: none;
-  border-radius: 10px;
-  background: #eaf4fb;
-  color: #1f3548;
-  font-weight: 700;
-}
-
-#senderNameSettingRow .ios-setting-label,
-#senderTitleSettingRow .ios-setting-label {
-  flex: 0 0 auto;
-}
-
-
-/* Text setting balance */
-#senderNameSettingRow .ios-setting-input,
-#senderTitleSettingRow .ios-setting-input {
-  width: auto;
-  max-width: none;
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-left: 0;
-  text-align: left;
-  padding: 0 12px;
-  border: none;
-  border-radius: 10px;
-  background: #eaf4fb;
-  color: #1f3548;
-  font-weight: 700;
-}
-
-#senderNameSettingRow .ios-setting-label,
-#senderTitleSettingRow .ios-setting-label {
-  flex: 0 0 auto;
-}
-
-#senderNameSettingRow,
-#senderTitleSettingRow {
-  gap: 18px;
-}
-
-/* PCでは伸びすぎないように軽く上限を持たせる */
-@media (min-width: 760px) {
-  #senderNameSettingRow .ios-setting-input,
-  #senderTitleSettingRow .ios-setting-input {
-    max-width: 420px;
-  }
-}
-
-
-/* Text settings unified style */
 #circleNameInput.ios-setting-input,
 #senderNameInput.ios-setting-input,
 #senderTitleInput.ios-setting-input {
-  width: auto;
-  max-width: none;
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-left: 0;
-  text-align: left;
-  padding: 0 12px;
-  border: none;
-  border-radius: 10px;
-  background: #eaf4fb;
-  color: #1f3548;
-  font-weight: 700;
-}
-
-label[for="circleNameInput"] .ios-setting-label,
-#senderNameSettingRow .ios-setting-label,
-#senderTitleSettingRow .ios-setting-label {
-  flex: 0 0 auto;
-}
-
-label[for="circleNameInput"],
-#senderNameSettingRow,
-#senderTitleSettingRow {
-  gap: 18px;
-}
-
-/* PCで横に伸びすぎないよう、入力欄の最大幅だけ揃える */
-@media (min-width: 760px) {
-  #circleNameInput.ios-setting-input,
-  #senderNameInput.ios-setting-input,
-  #senderTitleInput.ios-setting-input {
-    max-width: 420px;
-  }
-}
-
-
-/* Primary setting controls unified width */
-#circleNameInput.ios-setting-input,
-#senderNameInput.ios-setting-input,
-#senderTitleInput.ios-setting-input,
-#mainStudentSelect.ios-setting-select {
   width: 300px;
   max-width: 300px;
   flex: 0 0 300px;
   margin-left: auto;
   box-sizing: border-box;
+  text-align: left;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: #eaf4fb;
+  color: #1f3548;
+  font-weight: 700;
 }
 
-/* 送信者selectだけ高さ差を抑える */
-#mainStudentSelect.ios-setting-select {
-  height: 40px;
-}
-
-/* ラベル側を統一 */
 label[for="circleNameInput"] .ios-setting-label,
 #senderNameSettingRow .ios-setting-label,
 #senderTitleSettingRow .ios-setting-label,
@@ -1726,7 +1557,6 @@ label[for="circleNameInput"] .ios-setting-label,
   flex: 1 1 auto;
 }
 
-/* 行間・余白を統一 */
 label[for="circleNameInput"],
 #senderNameSettingRow,
 #senderTitleSettingRow,
@@ -1734,7 +1564,6 @@ label[for="circleNameInput"],
   gap: 16px;
 }
 
-/* スマホでは少しだけ縮める */
 @media (max-width: 640px) {
   #circleNameInput.ios-setting-input,
   #senderNameInput.ios-setting-input,
@@ -1745,3 +1574,4 @@ label[for="circleNameInput"],
     flex-basis: 220px;
   }
 }
+
