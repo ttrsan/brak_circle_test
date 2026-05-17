@@ -859,7 +859,7 @@ function openCaptureImageInTab(openedWindow, canvas) {
     body {
       margin: 0;
       padding: 16px;
-      background: #dbeaf1;
+      background: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: #263f55;
       text-align: center;
@@ -936,10 +936,11 @@ async function captureChatImage() {
     const messages = getCanvasCaptureMessages();
     const layout = makeCanvasCaptureLayout(measureCtx, messages, width);
 
+    const captureHeaderHeight = 66;
     const chatTopPadding = 16;
     const chatBottomPadding = 18;
     const chatHeight = layout.rows.reduce((sum, row) => sum + row.rowHeight, chatTopPadding + chatBottomPadding);
-    const height = chatHeight;
+    const height = captureHeaderHeight + chatHeight;
 
     const canvas = document.createElement("canvas");
     canvas.width = Math.ceil(width * scale);
@@ -967,11 +968,25 @@ async function captureChatImage() {
       loadedImages.set(src, await loadCanvasImage(src));
     }));
 
-    // チャット欄だけを描画する。通常画面のHTML/DOMは変更しない。
+    // 保存画像専用のヘッダー + チャット欄を描画する。通常画面のHTML/DOMは変更しない。
     ctx.fillStyle = "#dbeaf1";
     ctx.fillRect(0, 0, width, height);
 
-    let y = chatTopPadding;
+    // サークル名ヘッダー。チャット画面に馴染むよう、薄い背景と下線だけの控えめな見た目にする。
+    ctx.fillStyle = "#f7fcff";
+    ctx.fillRect(0, 0, width, captureHeaderHeight);
+    ctx.fillStyle = "#245986";
+    ctx.font = "700 26px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    ctx.textBaseline = "middle";
+    ctx.fillText(circleName || defaultCircleName || "テストサークル", 30, captureHeaderHeight / 2);
+    ctx.strokeStyle = "#b8d7e5";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, captureHeaderHeight - 1);
+    ctx.lineTo(width, captureHeaderHeight - 1);
+    ctx.stroke();
+
+    let y = captureHeaderHeight + chatTopPadding;
     layout.rows.forEach((row) => {
       const message = row.message;
       const profile = message.profile;
