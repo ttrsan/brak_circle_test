@@ -840,10 +840,91 @@ function makeCanvasCaptureLayout(ctx, messages, width) {
   return { rows, margin, innerWidth, avatarSize, gap, lineHeight, nameLineHeight };
 }
 
+
+function openCaptureImageInTab(openedWindow, canvas) {
+  const url = canvas.toDataURL("image/png");
+
+  if (!openedWindow || openedWindow.closed) {
+    showAppMessage("画像表示", "画像を開けませんでした。ポップアップブロックを解除して、もう一度お試しください。");
+    return;
+  }
+
+  const html = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チャット画像</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      background: #dbeaf1;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #263f55;
+      text-align: center;
+    }
+    .note {
+      margin: 0 0 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+      background: #dbeaf1;
+    }
+  </style>
+</head>
+<body>
+  <p class="note">画像を長押しすると、写真に保存できます。</p>
+  <img src="${url}" alt="チャット画像">
+</body>
+</html>`;
+
+  openedWindow.document.open();
+  openedWindow.document.write(html);
+  openedWindow.document.close();
+}
+
 async function captureChatImage() {
   if (!chatHistory.length) {
     showAppMessage("スクリーンショット", "保存できるチャットがありません。");
     return;
+  }
+
+  // iPhone Safariでは、Canvas生成後にwindow.openするとブロックされやすい。
+  // そのため、クリック直後に先に空タブを開き、生成後に画像を流し込む。
+  const captureWindow = window.open("", "_blank");
+
+  if (captureWindow) {
+    captureWindow.document.open();
+    captureWindow.document.write(`<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>チャット画像を生成中</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #263f55;
+      background: #dbeaf1;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <p>画像を生成しています...</p>
+</body>
+</html>`);
+    captureWindow.document.close();
   }
 
   try {
@@ -987,13 +1068,7 @@ async function captureChatImage() {
       y += row.rowHeight;
     });
 
-    const url = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = getCaptureFileName();
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    openCaptureImageInTab(captureWindow, canvas);
 
   } catch (error) {
     console.warn("チャット部分のみの画像保存に失敗しました。", error);

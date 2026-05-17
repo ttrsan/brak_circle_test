@@ -154,3 +154,9 @@ assets/stamps/03/01.png ～ 32.png
 
 
 170: スマホSafari向けにスクショボタンと情報ボタンのサイズ、padding、appearance、flex-basisを明示的に統一。
+
+
+171: iPhone Safariではキャプチャ画像を新規タブで開く方式に変更。PC等は従来通りダウンロード。
+
+
+172: PC/iPhone共通で、クリック直後に空タブを開き、Canvas生成後にそのタブへ画像を表示する方式に変更。
