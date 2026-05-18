@@ -396,8 +396,7 @@ function createCaptureNameLine(senderId = "sensei", savedName = "") {
 
   const plate = document.createElement("span");
   plate.className = `capture-plate plate ${profile.plateClass || "gold"}`;
-  plate.textContent = profile.title || "新任の先生";
-  applyTitlePlateClass(plate, profile.title || "新任の先生");
+  fitTitlePlateText(plate, profile.title || "新任の先生");
 
   const name = document.createElement("strong");
   name.textContent = displayName;
@@ -643,9 +642,21 @@ function wrapSegments(ctx, segments, maxWidth) {
   return lines;
 }
 
-function drawSegmentLines(ctx, lines, x, y, lineHeight, normalColor, ngColor) {
+function drawSegmentLines(ctx, lines, x, y, lineHeight, normalColor, ngColor, options = {}) {
+  const align = options.align || "left";
+  const maxWidth = options.maxWidth || 0;
+  const shortLineCenterThreshold = options.shortLineCenterThreshold || 0;
+
   lines.forEach((line, lineIndex) => {
+    const lineWidth = line.reduce((sum, part) => sum + part.width, 0);
     let cursor = x;
+
+    // スクショ時の「あ」など短文だけ左右バランスを取る。
+    // 長文はチャット画面と同じく左揃えにする。
+    if (align === "short-center" && maxWidth > 0 && lineWidth <= shortLineCenterThreshold) {
+      cursor = x + Math.max(0, (maxWidth - lineWidth) / 2);
+    }
+
     line.forEach((part) => {
       ctx.fillStyle = part.ng ? ngColor : normalColor;
       ctx.fillText(part.text, cursor, y + lineIndex * lineHeight);
@@ -807,6 +818,21 @@ function getCanvasCaptureMessages() {
 }
 
 // Canvasキャプチャ用に、各メッセージの行数・吹き出しサイズを事前計算する。
+
+function getCanvasFittedTitleFontSize(ctx, title = "", maxWidth = 104) {
+  const text = String(title || "新任の先生").trim() || "新任の先生";
+
+  for (let size = 12; size >= 5; size -= 0.2) {
+    ctx.font = `700 ${size}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+
+    if (ctx.measureText(text).width <= maxWidth) {
+      return Number(size.toFixed(1));
+    }
+  }
+
+  return 5;
+}
+
 function makeCanvasCaptureLayout(ctx, messages, width) {
   const margin = 14;
   const innerWidth = width - margin * 2;
@@ -836,8 +862,10 @@ function makeCanvasCaptureLayout(ctx, messages, width) {
       ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
       const segments = createCensoredSegments(message.text || "");
       lines = wrapSegments(ctx, segments, maxBubbleWidth - 28);
-      const widest = Math.max(40, ...lines.map((line) => line.reduce((sum, part) => sum + part.width, 0)));
-      bubbleWidth = Math.min(maxBubbleWidth, Math.ceil(widest + 22));
+      const widest = Math.max(0, ...lines.map((line) => line.reduce((sum, part) => sum + part.width, 0)));
+      const horizontalPadding = 22;
+      const minimumTextBubbleWidth = 40;
+      bubbleWidth = Math.min(maxBubbleWidth, Math.ceil(Math.max(minimumTextBubbleWidth, widest + horizontalPadding)));
       bubbleHeight = Math.max(38, lines.length * lineHeight + 14);
     }
 
@@ -1055,9 +1083,9 @@ async function captureChatImage() {
         }
 
         const plateText = profile.title || "新任の先生";
-        const plateFontSize = getCanvasTitleFontSize(plateText);
-        ctx.font = `700 ${plateFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
         const plateWidth = 126;
+        const plateFontSize = getCanvasFittedTitleFontSize(ctx, plateText, plateWidth - 14);
+        ctx.font = `700 ${plateFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
         const plateColor = profile.plateClass === "gold" ? "#e7f5fb" : "#3f85bd";
         const plateTextColor = profile.plateClass === "gold" ? "#385066" : "#ffffff";
         fillRoundRect(ctx, xArea, top, plateWidth, 22, 3, plateColor);
@@ -1065,7 +1093,17 @@ async function captureChatImage() {
         ctx.fillStyle = plateTextColor;
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
-        ctx.fillText(plateText, xArea + plateWidth / 2, top + 11);
+        const measuredPlateTextWidth = ctx.measureText(plateText).width;
+        const maxPlateTextWidth = plateWidth - 14;
+        const plateScaleX = measuredPlateTextWidth > maxPlateTextWidth
+          ? Math.max(0.62, maxPlateTextWidth / measuredPlateTextWidth)
+          : 1;
+
+        ctx.save();
+        ctx.translate(xArea + plateWidth / 2, top + 11);
+        ctx.scale(plateScaleX, 1);
+        ctx.fillText(plateText, 0, 0);
+        ctx.restore();
         ctx.textAlign = "left";
 
         ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -1102,7 +1140,14 @@ async function captureChatImage() {
 
         ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
         ctx.textBaseline = "alphabetic";
-        drawSegmentLines(ctx, row.lines, bubbleX + 10, bubbleY + 25, 25, textColor, "#ff405f");
+        const textAreaWidth = row.bubbleWidth - 22;
+        const textBlockHeight = row.lines.length * 25;
+        const firstLineBaseline = bubbleY + (row.bubbleHeight - textBlockHeight) / 2 + 20;
+        drawSegmentLines(ctx, row.lines, bubbleX + 11, firstLineBaseline, 25, textColor, "#ff405f", {
+          align: "short-center",
+          maxWidth: textAreaWidth,
+          shortLineCenterThreshold: 28
+        });
       }
 
       y += row.rowHeight;
@@ -1255,44 +1300,77 @@ function isKnownSenderId(senderId) {
 
 // senderProfiles の情報を取得する。先生だけは設定された称号を反映する。
 
-// 称号プレートは横幅固定。
-// 長い称号だけ文字サイズを縮小する。
-function getTitleLengthClass(title = "") {
-  const textLength = Array.from(String(title).trim()).length;
 
-  if (textLength >= 11) {
-    return "title-long";
-  }
+const titleFitCanvas = document.createElement("canvas");
+const titleFitCtx = titleFitCanvas.getContext("2d");
 
-  if (textLength >= 8) {
-    return "title-medium";
-  }
-
-  return "";
+function getPlatePixelWidth() {
+  return window.matchMedia("(max-width: 760px)").matches ? 76 : 128;
 }
 
-function applyTitlePlateClass(plateElement, title = "") {
-  const titleClass = getTitleLengthClass(title);
-
-  plateElement.classList.remove("title-medium", "title-long");
-
-  if (titleClass) {
-    plateElement.classList.add(titleClass);
-  }
+function getPlateInnerPixelWidth() {
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  return getPlatePixelWidth() - (isMobile ? 8 : 12);
 }
 
-function getCanvasTitleFontSize(title = "") {
-  const textLength = Array.from(String(title).trim()).length;
-
-  if (textLength >= 11) {
-    return 9;
+function measureTitleTextWidth(text, fontSize) {
+  if (!titleFitCtx) {
+    return 0;
   }
 
-  if (textLength >= 8) {
-    return 11;
+  titleFitCtx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+  return titleFitCtx.measureText(String(text || "")).width;
+}
+
+function getFittedTitleFontSize(title = "") {
+  const text = String(title || "新任の先生").trim() || "新任の先生";
+  const maxWidth = getPlateInnerPixelWidth();
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  const startSize = isMobile ? 9 : 13;
+  const minSize = isMobile ? 4.8 : 7;
+
+  for (let size = startSize; size >= minSize; size -= 0.2) {
+    if (measureTitleTextWidth(text, size) <= maxWidth) {
+      return Number(size.toFixed(1));
+    }
   }
 
-  return 12;
+  return minSize;
+}
+
+function fitTitlePlateText(plateElement, title = "") {
+  const text = String(title || "新任の先生").trim() || "新任の先生";
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  const plateInnerWidth = isMobile ? 78 : getPlateInnerPixelWidth();
+  const startSize = isMobile ? 9 : 13;
+  const minSize = isMobile ? 6 : 7;
+
+  let fittedSize = minSize;
+
+  for (let size = startSize; size >= minSize; size -= 0.2) {
+    if (measureTitleTextWidth(text, size) <= plateInnerWidth) {
+      fittedSize = Number(size.toFixed(1));
+      break;
+    }
+  }
+
+  const measuredWidth = measureTitleTextWidth(text, fittedSize);
+  const scaleX = measuredWidth > plateInnerWidth
+    ? Math.max(0.62, plateInnerWidth / measuredWidth)
+    : 1;
+
+  plateElement.textContent = "";
+  plateElement.style.whiteSpace = "nowrap";
+  plateElement.style.overflow = "hidden";
+  plateElement.style.textOverflow = "clip";
+
+  const textSpan = document.createElement("span");
+  textSpan.className = "plate-fit-text";
+  textSpan.textContent = text;
+  textSpan.style.fontSize = `${fittedSize}px`;
+  textSpan.style.transform = `scaleX(${scaleX})`;
+
+  plateElement.appendChild(textSpan);
 }
 
 function getSenderProfile(senderId = "sensei") {
@@ -1340,8 +1418,7 @@ function createNameLine(senderId = "sensei", savedName = "") {
 
   const plate = document.createElement("span");
   plate.className = `plate ${profile.plateClass || "gold"}`;
-  plate.textContent = profile.title || "新任の先生";
-  applyTitlePlateClass(plate, profile.title || "新任の先生");
+  fitTitlePlateText(plate, profile.title || "新任の先生");
 
   const name = document.createElement("strong");
   name.textContent = displayName;

@@ -119,32 +119,39 @@ body {
 .site-info-button {
   width: 44px;
   height: 44px;
-  min-width: 44px;
-  max-width: 44px;
-  min-height: 44px;
-  max-height: 44px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    to bottom,
+    #6d8198,
+    #51667d
+  );
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 28px;
+  font-weight: 900;
+
   padding: 0;
-  margin: 0;
-  display: grid;
-  place-items: center;
-  flex: 0 0 44px;
-  box-sizing: border-box;
   line-height: 1;
+
+  box-shadow:
+    0 2px 0 rgba(0,0,0,0.16),
+    0 3px 8px rgba(0,0,0,0.14);
+
+  text-shadow:
+    0 1px 1px rgba(0,0,0,0.25);
+
+  cursor: pointer;
+
   -webkit-appearance: none;
   appearance: none;
-  border: none;
-  border-radius: 8px;
-  color: #164773;
-  background: linear-gradient(#ffffff, #dceef5);
-  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24);
-  font-family:
-    "Segoe UI Symbol",
-    "Apple Symbols",
-    "Noto Sans JP",
-    sans-serif;
-  font-size: 24px;
-  font-weight: 900;
-  cursor: pointer;
 }
 
 /* Navigation tabs */
@@ -876,11 +883,27 @@ body {
     font-size: 14px;
   }
 
-  .plate.gold {
+    .plate.gold,
+  .plate.blue {
+    width: 76px;
     min-width: 76px;
+    max-width: 76px;
     height: 18px;
-    padding: 0 5px;
+
+    padding: 0 4px;
+
+    white-space: nowrap;
+    overflow: hidden;
+
     font-size: 9px;
+  }
+
+  .plate.title-medium {
+    font-size: 8px;
+  }
+
+  .plate.title-long {
+    font-size: 7px;
   }
 
   .bubble {
@@ -1636,4 +1659,265 @@ label[for="circleNameInput"],
 
 .plate.title-long {
   font-size: 9px;
+}
+
+
+/* 206: Mobile title font shrink fix
+   The global .plate.title-long rule can override the mobile font size.
+   Use more specific selectors after the global title plate rules.
+   Width/height are kept at the existing mobile plate size.
+*/
+@media (max-width: 760px) {
+  .name-line .plate.gold,
+  .name-line .plate.blue {
+    width: 76px;
+    min-width: 76px;
+    max-width: 76px;
+    height: 18px;
+    padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+  }
+
+  .name-line .plate.gold.title-medium,
+  .name-line .plate.blue.title-medium {
+    font-size: 7.5px;
+  }
+
+  .name-line .plate.gold.title-long,
+  .name-line .plate.blue.title-long {
+    font-size: 6px;
+    letter-spacing: -0.4px;
+  }
+}
+
+
+/* 207: title plate is fitted by JS using actual measured text width */
+.plate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.name-line .plate.gold,
+.name-line .plate.blue {
+  display: inline-grid;
+  place-items: center;
+}
+
+
+/* 208: Mobile title plate refit
+   Restore readable padding and use horizontal compression for very long titles.
+   This avoids increasing the plate height.
+*/
+.plate {
+  overflow: hidden;
+}
+
+.plate .plate-fit-text {
+  display: inline-block;
+  max-width: none;
+  white-space: nowrap;
+  transform-origin: center center;
+}
+
+@media (max-width: 760px) {
+  .name-line .plate.gold,
+  .name-line .plate.blue {
+    width: 88px;
+    min-width: 88px;
+    max-width: 88px;
+    height: 18px;
+    padding: 0 5px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .name-line .plate .plate-fit-text {
+    line-height: 1;
+  }
+}
+
+
+.site-info-button span {
+  transform: translateY(-1px);
+}
+
+
+/* 210: Site info button as camera-button sibling */
+.site-info-button {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 44px !important;
+
+  border: none !important;
+  border-radius: 8px !important;
+
+  color: #164773 !important;
+  background: linear-gradient(#ffffff, #dceef5) !important;
+  box-shadow: 0 2px 5px rgba(43, 99, 134, 0.24) !important;
+
+  font-family:
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic",
+    "Meiryo",
+    system-ui,
+    sans-serif !important;
+  font-size: 27px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  cursor: pointer !important;
+}
+
+.site-info-button span {
+  display: block !important;
+  transform: translateY(-1px) !important;
+  line-height: 1 !important;
+}
+
+.site-info-button:hover {
+  background: linear-gradient(#ffffff, #cce8f3) !important;
+}
+
+
+/* 211: Match question icon size to camera icon */
+.site-info-button {
+  font-size: 22px !important;
+}
+
+.site-info-button span {
+  transform: translateY(-0.5px) !important;
+}
+
+
+/* 212: Bubble text centering and balanced padding */
+.bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+
+  line-height: 1.25;
+  vertical-align: middle;
+}
+
+.bubble-text {
+  display: block;
+  line-height: 1.25;
+}
+
+
+/* 213: Align live stamp size closer to capture output */
+.stamp-bubble {
+  width: 112px;
+  height: 112px;
+}
+
+@media (max-width: 560px) {
+  .stamp-bubble {
+    width: 86px;
+    height: 86px;
+  }
+}
+
+
+
+
+/* 215: Stamp frame sizing fix
+   Do not scale the image itself.
+   Increase the frame slightly so the image keeps its aspect ratio naturally.
+*/
+.stamp-bubble {
+  width: 120px;
+  height: 120px;
+
+  overflow: hidden;
+}
+
+.chat-stamp-image {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+@media (max-width: 560px) {
+  .stamp-bubble {
+    width: 92px;
+    height: 92px;
+  }
+}
+
+
+/* 216: Stamp aspect ratio fix
+   The stamp bubble also has .bubble styles, so force the stamp layout back to a square image frame.
+   Do not stretch the img with width:100% + height:100%; use max-size instead.
+*/
+.stamp-bubble {
+  width: 120px !important;
+  height: 120px !important;
+  aspect-ratio: 1 / 1;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 4px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.chat-stamp-image {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: block !important;
+  object-fit: contain !important;
+  transform: none !important;
+}
+
+@media (max-width: 560px) {
+  .stamp-bubble {
+    width: 92px !important;
+    height: 92px !important;
+  }
+}
+
+
+/* 217: Mobile chat bubble padding
+   PC display is kept as-is.
+   On mobile, reduce the vertical whitespace in text bubbles.
+*/
+@media (max-width: 560px) {
+  .bubble:not(.stamp-bubble) {
+    min-height: 0;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    line-height: 1.22;
+    align-items: center;
+  }
+
+  .bubble-text {
+    line-height: 1.22;
+  }
 }
