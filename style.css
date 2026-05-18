@@ -1614,3 +1614,26 @@ label[for="circleNameInput"],
     white-space: nowrap;
   }
 }
+
+
+/* 202: Title plate
+   Keep width fixed and shrink font size only.
+   No wrapping, no height expansion.
+*/
+.plate {
+  width: 128px;
+  min-width: 128px;
+  max-width: 128px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  box-sizing: border-box;
+}
+
+.plate.title-medium {
+  font-size: 11px;
+}
+
+.plate.title-long {
+  font-size: 9px;
+}

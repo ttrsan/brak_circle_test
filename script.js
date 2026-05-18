@@ -395,8 +395,9 @@ function createCaptureNameLine(senderId = "sensei", savedName = "") {
   nameLine.className = "capture-name-line";
 
   const plate = document.createElement("span");
-  plate.className = `capture-plate ${profile.plateClass || "gold"}`;
+  plate.className = `capture-plate plate ${profile.plateClass || "gold"}`;
   plate.textContent = profile.title || "新任の先生";
+  applyTitlePlateClass(plate, profile.title || "新任の先生");
 
   const name = document.createElement("strong");
   name.textContent = displayName;
@@ -1054,8 +1055,9 @@ async function captureChatImage() {
         }
 
         const plateText = profile.title || "新任の先生";
-        ctx.font = "700 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        const plateWidth = Math.max(126, Math.ceil(ctx.measureText(plateText).width + 22));
+        const plateFontSize = getCanvasTitleFontSize(plateText);
+        ctx.font = `700 ${plateFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+        const plateWidth = 126;
         const plateColor = profile.plateClass === "gold" ? "#e7f5fb" : "#3f85bd";
         const plateTextColor = profile.plateClass === "gold" ? "#385066" : "#ffffff";
         fillRoundRect(ctx, xArea, top, plateWidth, 22, 3, plateColor);
@@ -1252,6 +1254,47 @@ function isKnownSenderId(senderId) {
 }
 
 // senderProfiles の情報を取得する。先生だけは設定された称号を反映する。
+
+// 称号プレートは横幅固定。
+// 長い称号だけ文字サイズを縮小する。
+function getTitleLengthClass(title = "") {
+  const textLength = Array.from(String(title).trim()).length;
+
+  if (textLength >= 11) {
+    return "title-long";
+  }
+
+  if (textLength >= 8) {
+    return "title-medium";
+  }
+
+  return "";
+}
+
+function applyTitlePlateClass(plateElement, title = "") {
+  const titleClass = getTitleLengthClass(title);
+
+  plateElement.classList.remove("title-medium", "title-long");
+
+  if (titleClass) {
+    plateElement.classList.add(titleClass);
+  }
+}
+
+function getCanvasTitleFontSize(title = "") {
+  const textLength = Array.from(String(title).trim()).length;
+
+  if (textLength >= 11) {
+    return 9;
+  }
+
+  if (textLength >= 8) {
+    return 11;
+  }
+
+  return 12;
+}
+
 function getSenderProfile(senderId = "sensei") {
   const customSenseiTitle = senderTitle || "新任の先生";
 
@@ -1298,6 +1341,7 @@ function createNameLine(senderId = "sensei", savedName = "") {
   const plate = document.createElement("span");
   plate.className = `plate ${profile.plateClass || "gold"}`;
   plate.textContent = profile.title || "新任の先生";
+  applyTitlePlateClass(plate, profile.title || "新任の先生");
 
   const name = document.createElement("strong");
   name.textContent = displayName;
