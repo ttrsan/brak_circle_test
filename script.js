@@ -836,17 +836,17 @@ function getCanvasFittedTitleFontSize(ctx, title = "", maxWidth = 104) {
 function makeCanvasCaptureLayout(ctx, messages, width) {
   const margin = 14;
   const innerWidth = width - margin * 2;
-  const avatarSize = 42;
-  const gap = 9;
+  const avatarSize = 54;
+  const gap = 10;
   const lineHeight = 25;
   const nameLineHeight = 24;
-  const maxBubbleWidth = Math.min(520, innerWidth - avatarSize - gap - 20);
+  const maxBubbleWidth = Math.min(440, innerWidth - avatarSize - gap - 20);
   const rows = [];
   let lastSenderKey = "";
 
   ctx.font = "700 21px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-  messages.forEach((message) => {
+  messages.forEach((message, index) => {
     const senderKey = `${message.senderId}:${message.displayName}`;
     const compact = compactMode && lastSenderKey === senderKey;
     const isStamp = message.type === "stamp" || message.type === "systemWarning" || message.type === "shirokoReply";
@@ -870,7 +870,19 @@ function makeCanvasCaptureLayout(ctx, messages, width) {
     }
 
     const contentHeight = bubbleHeight + (showMeta ? nameLineHeight : 0);
-    const rowHeight = Math.max(showMeta ? avatarSize : 0, contentHeight) + 13;
+
+    // 同一話者のセリフ同士は少し詰める。
+    // 次の行で話者が変わる場合（生徒↔先生）は従来通り余白を残す。
+    const nextMessage = messages[index + 1];
+    const nextSenderKey = nextMessage
+      ? `${nextMessage.senderId}:${nextMessage.displayName}`
+      : "";
+
+    const isNextSameSender = senderKey === nextSenderKey;
+
+    const bottomGap = isNextSameSender ? 6 : 13;
+
+    const rowHeight = Math.max(showMeta ? avatarSize : 0, contentHeight) + bottomGap;
 
     rows.push({
       message,
@@ -981,7 +993,7 @@ async function captureChatImage() {
 
   try {
     const panel = document.querySelector(".chat-panel");
-    const width = 850;
+    const width = 620;
     const scale = Math.min(2, window.devicePixelRatio || 1);
     const measureCanvas = document.createElement("canvas");
     const measureCtx = measureCanvas.getContext("2d");
@@ -1044,8 +1056,8 @@ async function captureChatImage() {
       const profile = message.profile;
       const mainSenderId = getMainSenderId();
       const isStudent = message.senderId !== mainSenderId;
-      const xAvatar = layout.margin + 18;
-      const xArea = layout.margin + 18 + layout.avatarSize + layout.gap + 12;
+      const xAvatar = layout.margin + 10;
+      const xArea = layout.margin + 10 + layout.avatarSize + layout.gap + 10;
       const top = y;
       let contentY = top;
 
@@ -1069,7 +1081,7 @@ async function captureChatImage() {
           strokeRoundRect(ctx, xAvatar, top, layout.avatarSize, layout.avatarSize, 7, "#ffffff", 3);
 
           ctx.save();
-          ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
           ctx.fillStyle = "#ffffff";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -1106,7 +1118,7 @@ async function captureChatImage() {
         ctx.restore();
         ctx.textAlign = "left";
 
-        ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
         ctx.fillStyle = "#28547a";
         ctx.fillText(message.displayName, xArea + plateWidth + 14, top + 11);
         contentY += layout.nameLineHeight + 2;
