@@ -1118,7 +1118,7 @@ async function captureChatImage() {
         ctx.restore();
         ctx.textAlign = "left";
 
-        ctx.font = "700 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.font = "700 22px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
         ctx.fillStyle = "#28547a";
         ctx.fillText(message.displayName, xArea + plateWidth + 14, top + 11);
         contentY += layout.nameLineHeight + 2;
@@ -1156,9 +1156,8 @@ async function captureChatImage() {
         const textBlockHeight = row.lines.length * 25;
         const firstLineBaseline = bubbleY + (row.bubbleHeight - textBlockHeight) / 2 + 20;
         drawSegmentLines(ctx, row.lines, bubbleX + 11, firstLineBaseline, 25, textColor, "#ff405f", {
-          align: "short-center",
-          maxWidth: textAreaWidth,
-          shortLineCenterThreshold: 28
+          align: "left",
+          maxWidth: textAreaWidth
         });
       }
 
