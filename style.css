@@ -1921,3 +1921,22 @@ label[for="circleNameInput"],
     line-height: 1.22;
   }
 }
+
+
+/* 221: Small purpose notice under the circle title */
+.site-purpose-notice {
+  margin: 7px 4px 0;
+  color: #315f83;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  opacity: 0.88;
+}
+
+@media (max-width: 560px) {
+  .site-purpose-notice {
+    margin-top: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+}
